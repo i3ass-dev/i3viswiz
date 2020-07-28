@@ -1,21 +1,21 @@
 ---
 description: >
   Professional window focus for i3wm
-updated:       2019-02-19
-version:       0.044
+updated:       2020-07-28
+version:       0.054
 author:        budRich
 repo:          https://github.com/budlabs/i3ass
 created:       2018-01-18
 dependencies:  [bash, gawk, i3]
 see-also:      [bash(1), awk(1), i3(1)]
 synopsis: |
-    [--gap|-g GAPSIZE] **DIRECTION**
-    [--focus|-f] --title|-t       [TARGET]
-    [--focus|-f] --instance|-i    [TARGET]
-    [--focus|-f] --class|-c       [TARGET]
-    [--focus|-f] --titleformat|-o [TARGET]
-    [--focus|-f] --winid|-d       [TARGET]
-    [--focus|-f] --parent|-p      [TARGET]
+    [--gap|-g GAPSIZE] **DIRECTION**       [--json JSON]
+    [--focus|-f] --title|-t       [TARGET] [--json JSON]
+    [--focus|-f] --instance|-i    [TARGET] [--json JSON]
+    [--focus|-f] --class|-c       [TARGET] [--json JSON]
+    [--focus|-f] --titleformat|-o [TARGET] [--json JSON]
+    [--focus|-f] --winid|-d       [TARGET] [--json JSON]
+    [--focus|-f] --parent|-p      [TARGET] [--json JSON]
     --help|-h
     --version|-v
 ...

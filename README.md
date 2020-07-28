@@ -3,13 +3,13 @@
 ### usage
 
 ```text
-i3viswiz [--gap|-g GAPSIZE] **DIRECTION**
-i3viswiz [--focus|-f] --title|-t       [TARGET]
-i3viswiz [--focus|-f] --instance|-i    [TARGET]
-i3viswiz [--focus|-f] --class|-c       [TARGET]
-i3viswiz [--focus|-f] --titleformat|-o [TARGET]
-i3viswiz [--focus|-f] --winid|-d       [TARGET]
-i3viswiz [--focus|-f] --parent|-p      [TARGET]
+i3viswiz [--gap|-g GAPSIZE] DIRECTION       [--json JSON]
+i3viswiz [--focus|-f] --title|-t       [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --instance|-i    [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --class|-c       [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --titleformat|-o [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --winid|-d       [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --parent|-p      [TARGET] [--json JSON]
 i3viswiz --help|-h
 i3viswiz --version|-v
 ```
@@ -43,6 +43,8 @@ If **TARGET** matches the **TITLE** of a visible window,
 that windows  **CON_ID** will get printed to `stdout`. If no
 **TARGET** is specified, a list of all tiled windows will
 get printed with  **TITLE** as the last field of each row.
+
+`--json` JSON  
 
 `--instance`|`-i` [TARGET]  
 If **TARGET** matches the **INSTANCE** of a visible window,

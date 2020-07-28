@@ -1,5 +1,5 @@
 ---
-target:   init.sh
+target:   program.sh
 markdown: false
 wrap:     50
 ...
@@ -7,10 +7,9 @@ wrap:     50
 
 %%cat ___version%%
 %%cat ___envs%%
-%%cat ___deps%%
+%%cat -v '\(^#!/\)\|\(\s#bashbud$\)' main.sh%%
 %%cat ___help%%
-for ___f in "${___dir}/lib"/*; do
-  source "$___f"
-done
+%%cat -v '\(^#!/\)' lib/*%%
 
 %%cat ___getopt%%
+main "${@}"

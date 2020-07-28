@@ -4,10 +4,12 @@ main(){
 
   local target type dir
 
-  if [[ -n ${__o[title]:-} ]]; then
+  declare -g _json
+
+  if [[ -n ${__o[title]} ]]; then
     type=title
     target="${__lastarg:-}"
-  elif [[ -n ${__o[titleformat]:-} ]]; then
+  elif [[ -n ${__o[titleformat]} ]]; then
     type=titleformat
     target="${__lastarg:-}"
   elif [[ -n ${__o[instance]:-} ]]; then
@@ -35,7 +37,16 @@ main(){
 
   fi
 
-  result="$(listvisible "$type" "${__o[gap]:=5}" "${target:-X}")"
+  [[ -n ${_json:=${__o[json]}} ]] \
+    || _json=$(i3-msg -t get_tree)
+
+  : "${__o[gap]:=5}"
+
+  result="$(listvisible "$type"        \
+                        "${__o[gap]}"  \
+                        "${target:-X}" \
+                        "$_json"
+           )"
 
   if ((${__o[focus]:-0}==1)); then
     [[ $result =~ ^[0-9]+$ ]] \
@@ -46,23 +57,25 @@ main(){
   else
     eval "$(echo -e "$result" | head -1)"
 
-    if [[ $trgcon = floating ]]; then
+    if [[ ${trgcon:=} = floating ]]; then
 
-    case $target in
-      l ) dir=left   ;;
-      r ) dir=right  ;;
-      u ) dir=left   ;;
-      d ) dir=right  ;;
-    esac
+      case $target in
+        l ) dir=left   ;;
+        r ) dir=right  ;;
+        u ) dir=left   ;;
+        d ) dir=right  ;;
+      esac
 
-    i3-msg -q focus $dir
+      i3-msg -q focus $dir
 
     else
       [[ -z $trgcon ]] && {
-        eval "$(
-          listvisible "$type" "$((__o[gap]+=75))" "${target:-X}" \
-          | head -1
-        )"
+        ((__o[gap]+=75))
+        eval "$(listvisible "$type"        \
+                            "${__o[gap]}"  \
+                            "${target:-X}" \
+                            "$_json" | head -1
+             )"
       }
 
       [[ -n $trgcon ]] \

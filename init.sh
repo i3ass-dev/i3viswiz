@@ -3,10 +3,11 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-i3viswiz - version: 0.044
-updated: 2019-02-19 by budRich
+i3viswiz - version: 0.054
+updated: 2020-07-28 by budRich
 EOB
 }
+
 
 
 
@@ -18,13 +19,13 @@ i3viswiz - Professional window focus for i3wm
 
 SYNOPSIS
 --------
-i3viswiz [--gap|-g GAPSIZE] DIRECTION
-i3viswiz [--focus|-f] --title|-t       [TARGET]
-i3viswiz [--focus|-f] --instance|-i    [TARGET]
-i3viswiz [--focus|-f] --class|-c       [TARGET]
-i3viswiz [--focus|-f] --titleformat|-o [TARGET]
-i3viswiz [--focus|-f] --winid|-d       [TARGET]
-i3viswiz [--focus|-f] --parent|-p      [TARGET]
+i3viswiz [--gap|-g GAPSIZE] DIRECTION       [--json JSON]
+i3viswiz [--focus|-f] --title|-t       [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --instance|-i    [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --class|-c       [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --titleformat|-o [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --winid|-d       [TARGET] [--json JSON]
+i3viswiz [--focus|-f] --parent|-p      [TARGET] [--json JSON]
 i3viswiz --help|-h
 i3viswiz --version|-v
 
@@ -51,6 +52,8 @@ If no TARGET is specified, a list of all tiled
 windows will get printed with  TITLE as the last
 field of each row.
 
+
+--json JSON  
 
 --instance|-i [TARGET]  
 If TARGET matches the INSTANCE of a visible
@@ -108,42 +111,37 @@ for ___f in "${___dir}/lib"/*; do
 done
 
 declare -A __o
-eval set -- "$(getopt --name "i3viswiz" \
-  --options "g:fticodphv" \
-  --longoptions "gap:,focus,title,instance,class,titleformat,winid,parent,help,version," \
-  -- "$@"
+options="$(
+  getopt --name "[ERROR]:i3viswiz" \
+    --options "g:fticodphv" \
+    --longoptions "gap:,focus,title,json:,instance,class,titleformat,winid,parent,help,version," \
+    -- "$@" || exit 98
 )"
+
+eval set -- "$options"
+unset options
 
 while true; do
   case "$1" in
     --gap        | -g ) __o[gap]="${2:-}" ; shift ;;
     --focus      | -f ) __o[focus]=1 ;; 
     --title      | -t ) __o[title]=1 ;; 
+    --json       ) __o[json]="${2:-}" ; shift ;;
     --instance   | -i ) __o[instance]=1 ;; 
     --class      | -c ) __o[class]=1 ;; 
     --titleformat | -o ) __o[titleformat]=1 ;; 
     --winid      | -d ) __o[winid]=1 ;; 
     --parent     | -p ) __o[parent]=1 ;; 
-    --help       | -h ) __o[help]=1 ;; 
-    --version    | -v ) __o[version]=1 ;; 
+    --help       | -h ) ___printhelp && exit ;;
+    --version    | -v ) ___printversion && exit ;;
     -- ) shift ; break ;;
     *  ) break ;;
   esac
   shift
 done
 
-if [[ ${__o[help]:-} = 1 ]]; then
-  ___printhelp
-  exit
-elif [[ ${__o[version]:-} = 1 ]]; then
-  ___printversion
-  exit
-fi
-
 [[ ${__lastarg:="${!#:-}"} =~ ^--$|${0}$ ]] \
-  && __lastarg="" \
-  || true
-
+  && __lastarg="" 
 
 
 
