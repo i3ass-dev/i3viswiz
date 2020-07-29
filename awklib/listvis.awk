@@ -1,5 +1,9 @@
 function listvis(id,stackh,trg,layout) {
 
+  # searches container with con_id=id recursevely 
+  # for visible containers, add them to the global
+  # array: visiblecontainers
+
   layout=ac[id]["layout"]
 
   if ("children" in ac[id]) {
@@ -18,6 +22,6 @@ function listvis(id,stackh,trg,layout) {
       }
     }
   } else if (ac[id]["f"]!=1) {
-    avis[id]=id
+    visiblecontainers[id]=id
   }
 }

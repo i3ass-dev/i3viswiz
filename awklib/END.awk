@@ -1,6 +1,5 @@
 END{
 
-  listvis(awsid)
   wall="none"
 
   switch (dir) {
@@ -48,8 +47,11 @@ END{
   trgx=int(trgx)
   trgy=int(trgy)
 
-  if(actfloat==""){
-    for (w in avis) {
+  # listvis() creates the visiblecontainers array
+  listvis(awsid)
+
+  if (actfloat=="") {
+    for (w in visiblecontainers) {
       hit=0
       hity=0
       hitx=0
@@ -72,7 +74,7 @@ END{
     tpar="floating"
 
   if (dir !~ /^[lrudX]$/) {
-    for (w in avis) {
+    for (w in visiblecontainers) {
       if ((opret=="title" && ac[w]["ttl"] ~ dir) || 
         (opret=="class" && ac[w]["cls"] ~ dir) || 
         (opret=="parent" && ac[w]["par"] ~ dir) || 
@@ -91,7 +93,7 @@ END{
     "sy=" ac[awsid]["y"], \
     "sw=" ac[awsid]["w"], \
     "sh=" ac[awsid]["h"] 
-  for (w in avis) {
+  for (w in visiblecontainers) {
     if(w==act)
       printf "* "
     else

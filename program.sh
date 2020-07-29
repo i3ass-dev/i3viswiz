@@ -3,7 +3,7 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-i3viswiz - version: 0.233
+i3viswiz - version: 0.242
 updated: 2020-07-29 by budRich
 EOB
 }
@@ -190,7 +190,6 @@ cat << 'EOB'
 # BEGIN{focs=0 end=0 csid="first" actfloat=""}
 END{
 
-  listvis(awsid)
   wall="none"
 
   switch (dir) {
@@ -238,8 +237,11 @@ END{
   trgx=int(trgx)
   trgy=int(trgy)
 
-  if(actfloat==""){
-    for (w in avis) {
+  # listvis() creates the visiblecontainers array
+  listvis(awsid)
+
+  if (actfloat=="") {
+    for (w in visiblecontainers) {
       hit=0
       hity=0
       hitx=0
@@ -262,7 +264,7 @@ END{
     tpar="floating"
 
   if (dir !~ /^[lrudX]$/) {
-    for (w in avis) {
+    for (w in visiblecontainers) {
       if ((opret=="title" && ac[w]["ttl"] ~ dir) || 
         (opret=="class" && ac[w]["cls"] ~ dir) || 
         (opret=="parent" && ac[w]["par"] ~ dir) || 
@@ -281,7 +283,7 @@ END{
     "sy=" ac[awsid]["y"], \
     "sw=" ac[awsid]["w"], \
     "sh=" ac[awsid]["h"] 
-  for (w in avis) {
+  for (w in visiblecontainers) {
     if(w==act)
       printf "* "
     else
@@ -305,6 +307,10 @@ END{
 }
 function listvis(id,stackh,trg,layout) {
 
+  # searches container with con_id=id recursevely 
+  # for visible containers, add them to the global
+  # array: visiblecontainers
+
   layout=ac[id]["layout"]
 
   if ("children" in ac[id]) {
@@ -323,7 +329,7 @@ function listvis(id,stackh,trg,layout) {
       }
     }
   } else if (ac[id]["f"]!=1) {
-    avis[id]=id
+    visiblecontainers[id]=id
   }
 }
 
@@ -336,14 +342,7 @@ $1 ~ /"nodes"/ && ac[cid]["counter"] == "go"  && $2 != "[]" {
   csid=cid
 }
  # types: con,floating_con,dockarea,root,output
-$1 ~ /"type"/ {
-
-  if ($2 ~ /con|workspace/) 
-    {getrect=1}
-  else 
-    {getrect=0}
-
-}
+$1 ~ /"type"/ {getrect=($2 ~ /con|workspace/?1:0)}
 
 $(NF-1) ~ /"id"/        {cid=$NF}
 $1      ~ /"layout"/    {clo=gensub(/"/,"","g",$2)}

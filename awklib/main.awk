@@ -9,14 +9,7 @@ $1 ~ /"nodes"/ && ac[cid]["counter"] == "go"  && $2 != "[]" {
   csid=cid
 }
  # types: con,floating_con,dockarea,root,output
-$1 ~ /"type"/ {
-
-  if ($2 ~ /con|workspace/) 
-    {getrect=1}
-  else 
-    {getrect=0}
-
-}
+$1 ~ /"type"/ {getrect=($2 ~ /con|workspace/?1:0)}
 
 $(NF-1) ~ /"id"/        {cid=$NF}
 $1      ~ /"layout"/    {clo=gensub(/"/,"","g",$2)}
