@@ -7,119 +7,101 @@ END{
 
   wall="none"
 
-  switch (dir) {
-
-    case "r":
-      trgx=ac[act]["x"]+ac[act]["w"]+gapsz
-      trgy=(gapsz+ac[act]["y"])+ac[act]["h"]/2
-
-      if(trgx>(wsw+wsx)){
-        trgx=gapsz
-        wall="right"
-      }
-    break
-
-    case "l":
-      trgx=ac[act]["x"]-gapsz
-      trgy=(gapsz+ac[act]["y"])+ac[act]["h"]/2
-      if(trgx<wsx){
-        trgx=waw-gapsz
-        wall="left"
-      }
-    break
-
-    case "u":
-      trgx=(gapsz+ac[act]["x"])+ac[act]["w"]/2
-      trgy=ac[act]["y"]-gapsz
-      if(trgy<wsy){
-        trgy=ac[awsid]["h"]-gapsz
-        wall="up"
-      }
-    break
-
-    case "d":
-      trgx=(gapsz+ac[act]["x"])+ac[act]["w"]/2
-      trgy=ac[act]["y"]+ac[act]["h"]+gapsz
-      
-      if(trgy>(wsh+wsy)){
-        trgy=gapsz
-        wall="down"
-      }
-    break
-    
+  split("x y w h",geo," ")
+  for (s in geo) {
+    c["ws" geo[s]]=int(ac[awsid][geo[s]])
+    c["aw" geo[s]]=int(ac[act][geo[s]])
   }
-
-  trgx=int(trgx)
-  trgy=int(trgy)
 
   # listvis() creates the visiblecontainers array
   listvis(awsid)
 
-  if (actfloat=="") {
-    for (w in visiblecontainers) {
-      hit=0
-      hity=0
-      hitx=0
-      xar=ac[w]["x"]+ac[w]["w"]
-      if(trgx>=ac[w]["x"])
-        if(xar>=trgx){++hitx;++hit}
-      if(trgy>=ac[w]["y"] && trgy<=(ac[w]["y"]+ac[w]["h"]))
-        {hity++;hit++}
+  if (dir ~ /^l|r|u|d|X$/) {
 
-      if (hit==2){
-        tpar=ac[w]["par"]
-        tcon=w
-        break
+    trgx=int((dir == "r" ? c[awx]+c[aww]+gapsz :
+              dir == "l" ? c[awx]-gapsz     :
+              c[awx]+(c[aww]/2)+gapsz ))
+
+    trgy=int((dir == "d" ? c[awy]+c[awh]+gapsz :
+              dir == "u" ? c[awy]-gapsz     :
+              c[awy]+(c[awh]/2)+gapsz ))
+
+    switch (dir) {
+
+      case "r":
+        if(trgx>(c[wsw]+c[wsx])){
+          trgx=gapsz
+          wall="right"
+        }
+      break
+
+      case "l":
+        if(trgx<c[wsx]){
+          trgx=waw-gapsz
+          wall="left"
+        }
+      break
+
+      case "u":
+        if(trgy<c[wsy]){
+          trgy=ac[awsid]["h"]-gapsz
+          wall="up"
+        }
+      break
+
+      case "d":
+        if(trgy>(c[wsh]+c[wsy])){
+          trgy=gapsz
+          wall="down"
+        }
+      break
+    }
+
+    if (actfloat=="") {
+      for (w in visiblecontainers) {
+        cwx=ac[w]["x"] ; cwy=ac[w]["y"]
+        cww=ac[w]["w"] ; cwh=ac[w]["h"]
+        cex=cwx+cww    ; cey=cwy+cwh
+
+        if (cwx <= trgx && trgx <= cex && cwy <= trgy && trgy <= cey) {
+          tpar=ac[w]["parent"]
+          tcon=w
+          break
+        }  
       }
-
-      
-    }
-  } 
-  else
-    tpar="floating"
-
-  if (dir !~ /^[lrudX]$/) {
-    for (w in visiblecontainers) {
-      if ((opret=="title" && ac[w]["ttl"] ~ dir) || 
-        (opret=="class" && ac[w]["cls"] ~ dir) || 
-        (opret=="parent" && ac[w]["par"] ~ dir) || 
-        (opret=="instance" && ac[w]["ins"] ~ dir) || 
-        (opret=="titleformat" && ac[w]["tf"] ~ dir) || 
-        (opret=="winid" && ac[w]["wid"] ~ dir))
-        {print w; exit}
-    }
-    exit
-  }
-
-  print \
-    "trgcon=" tcon, "trgx=" trgx, "trgy=" trgy, \
-    "wall=" wall, "trgpar=" tpar, \
-    "sx=" ac[awsid]["x"], \
-    "sy=" ac[awsid]["y"], \
-    "sw=" ac[awsid]["w"], \
-    "sh=" ac[awsid]["h"] 
-  for (w in visiblecontainers) {
-    if(w==act)
-      printf "* "
+    } 
     else
-      printf "- "
-
-    printf w " "
-    if (opret=="title"){tmpop="| " ac[w]["ttl"]}
-    else if (opret=="class"){tmpop="| " ac[w]["cls"]}
-    else if (opret=="parent"){tmpop="| " ac[w]["par"]}
-    else if (opret=="instance"){tmpop="| " ac[w]["ins"]}
-    else if (opret=="titleformat"){tmpop="| " ac[w]["tf"]}
-    else if (opret=="winid"){tmpop="| " ac[w]["wid"]}
-    else {tmpop=""}
-
-    split("xywh",s,"")
-    for (c in s)
-      printf sprintf("%2s %-6s", s[c]":", ac[w][s[c]])
-    gsub("[\"]","",tmpop)
-    print tmpop 
+      tpar="floating"
   }
+
+  else if (opret ~ /title|class|parent|instance|titleformat|winid/) {
+    for (w in visiblecontainers) {
+      if (ac[w][opret] ~ dir) {print w ;exit}
+    }
+  }
+
+  else
+    exit
+
+
+  firstline="trgcon=%d trgx=%d trgy=%d wall=%s trgpar=%s "
+  firstline=firstline "sx=%d sy=%d sw=%d sh=%d"
+  printf(firstline"\n",tcon,trgx,trgy,wall,tpar,c[awx],c[awy],c[aww],c[awh])
+
+  for (w in visiblecontainers) {
+
+    printf("%s %d ", (w==act ? "*" : "-" ), w)
+    for (s in geo) { printf("%2s %-6s", geo[s]":", ac[w][geo[s]]) }
+
+    print (opret ~ /title|class|parent|instance|titleformat|winid/ ?
+          "| " gensub(/"/,"","g",ac[w][opret]) : "") 
+  }
+
+  # example output:
+  # * 94548870755248 x: 0     y: 0     w: 1432  h: 220   | A
+  # - 94548870641312 x: 0     y: 220   w: 1432  h: 860   | C
 }
+
 function listvis(id,stackh,trg,layout) {
 
   # searches container with con_id=id recursevely 
@@ -202,16 +184,16 @@ $1=="\"window\"" && $2=="null" {
   ac[cid]["focused"]="X"
 }
 
-$1      ~ /"title_format"/ {ac[cid]["tf"]=$2}
-$1      ~ /"title"/ {ac[cid]["ttl"]=$2}
-$1      ~ /"window"/ {ac[cid]["wid"]=$2}
-$(NF-1) ~ /"class"/ {ac[cid]["cls"]=$NF}
+$1      ~ /"title_format"/ {ac[cid]["titleformat"]=$2}
+$1      ~ /"title"/ {ac[cid]["title"]=$2}
+$1      ~ /"window"/ {ac[cid]["winid"]=$2}
+$(NF-1) ~ /"class"/ {ac[cid]["class"]=$NF}
 
 # curpar current parent container (i34A|B|C|D)
 $1 ~ /"marks"/ && match($2,/"i34(.)"/,ma) {curpar=ma[1]}
 $1 ~ /"instance"/ {
-  ac[cid]["ins"]=$2
-  ac[cid]["par"]=curpar
+  ac[cid]["instance"]=$2
+  ac[cid]["parent"]=curpar
 }
 
 /^"floating":.+_on"$/ {

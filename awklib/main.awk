@@ -53,16 +53,16 @@ $1=="\"window\"" && $2=="null" {
   ac[cid]["focused"]="X"
 }
 
-$1      ~ /"title_format"/ {ac[cid]["tf"]=$2}
-$1      ~ /"title"/ {ac[cid]["ttl"]=$2}
-$1      ~ /"window"/ {ac[cid]["wid"]=$2}
-$(NF-1) ~ /"class"/ {ac[cid]["cls"]=$NF}
+$1      ~ /"title_format"/ {ac[cid]["titleformat"]=$2}
+$1      ~ /"title"/ {ac[cid]["title"]=$2}
+$1      ~ /"window"/ {ac[cid]["winid"]=$2}
+$(NF-1) ~ /"class"/ {ac[cid]["class"]=$NF}
 
 # curpar current parent container (i34A|B|C|D)
 $1 ~ /"marks"/ && match($2,/"i34(.)"/,ma) {curpar=ma[1]}
 $1 ~ /"instance"/ {
-  ac[cid]["ins"]=$2
-  ac[cid]["par"]=curpar
+  ac[cid]["instance"]=$2
+  ac[cid]["parent"]=curpar
 }
 
 /^"floating":.+_on"$/ {
