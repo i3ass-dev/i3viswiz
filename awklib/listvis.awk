@@ -1,32 +1,46 @@
-function listvis(id,achld,curc,c,schld,curs,s,stackh) {
-  stackh=0
+function listvis(id,stackh,trg,layout) {
 
-  if(ac[id]["layout"]=="stacked"){
-    split(ac[id]["childs"],schld," ")
-    for (s in schld) {
-      curs=schld[s]
-      gsub("[^0-9]","",curs)
-      if(curs==""){continue}
-      stackh++
+  layout=ac[id]["layout"]
+  # print id " --  " ac[id]["layout"]
+
+  if (layout ~ /tabbed|stacked/) {
+    trg=ac[id]["focused"]
+    if (layout == "stacked") {
+      # print trg
+      stackh=length(ac[id]["children"])
+      ac[trg]["h"]+=(ac[trg]["b"]*stackh)
+      ac[trg]["y"]-=(ac[trg]["b"]*stackh)
     }
-    stackh--
+    listvis(trg)
+  } else if (layout ~ /splitv|plith/) {
+    for (trg in ac[id]["children"]) {
+    # l=length(ac[trg]["children"])
+      if ("children" in ac[trg]) {
+        print layout " " length(ac[trg]["children"])
+        listvis(trg)
+      }
+      else if (ac[trg]["f"]!=1) {
+        avis[trg]=trg
+      }
+    }
   }
 
-  if(ac[id]["layout"]~/tabbed|stacked/){
-    ac[id]["childs"]=ac[id]["focused"]}
+  # split(ac[id]["childs"],achld," ")
 
-  split(ac[id]["childs"],achld," ")
-  for (c in achld) {
-    curc=achld[c]
-    gsub("[^0-9]","",curc)
-    if(curc==""){continue}
-    if(ac[id]["layout"]=="stacked"){
-      ac[curc]["h"]=ac[curc]["h"]+(ac[curc]["b"]*stackh)
-      ac[curc]["y"]=ac[curc]["y"]-(ac[curc]["b"]*stackh)
-    }
-    if (ac[curc]["childs"]!="")
-      listvis(curc)
-    else if (ac[curc]["f"]!=1)
-      avis[curc]=curc
-  }
+  # for (curc in ac[id]["children"]) {
+  #   # curc=achld[c]
+  #   # gsub("[^0-9]","",curc)
+
+  #   # if(curc==""){continue}
+
+  #   if(ac[id]["layout"]=="stacked"){
+  #     ac[curc]["h"]+=(ac[curc]["b"]*stackh)
+  #     ac[curc]["y"]-=(ac[curc]["b"]*stackh)
+  #   }
+
+  #   if (ac[curc]["childs"]!="")
+  #     listvis(curc)
+  #   else if (ac[curc]["f"]!=1)
+  #     avis[curc]=curc
+  # }
 }

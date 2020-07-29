@@ -1,12 +1,13 @@
 END{
-
+  print "this is the end"
   listvis(awsid)
+  print "dones"
   wall="none"
 
-  wsh=int(dim[aws]["h"])
-  wsw=int(dim[aws]["w"])
-  wsx=int(dim[aws]["x"])
-  wsy=int(dim[aws]["y"])
+  # wsh=int(ac[awsid]["h"])
+  # wsw=int(ac[awsid]["w"])
+  # wsx=int(ac[awsid]["x"])
+  # wsy=int(ac[awsid]["y"])
 
   if (dir=="r"){
     trgx=ac[act]["x"]+ac[act]["w"]+gapsz
@@ -22,7 +23,7 @@ END{
     trgx=ac[act]["x"]-gapsz
     trgy=(gapsz+ac[act]["y"])+ac[act]["h"]/2
     if(trgx<wsx){
-      trgx=dim[aws]["w"]-gapsz
+      trgx=waw-gapsz
       wall="left"
     }
   }
@@ -31,7 +32,7 @@ END{
     trgx=(gapsz+ac[act]["x"])+ac[act]["w"]/2
     trgy=ac[act]["y"]-gapsz
     if(trgy<wsy){
-      trgy=dim[aws]["h"]-gapsz
+      trgy=ac[awsid]["h"]-gapsz
       wall="up"
     }
   }
@@ -88,10 +89,10 @@ END{
   print \
     "trgcon=" tcon, "trgx=" trgx, "trgy=" trgy, \
     "wall=" wall, "trgpar=" tpar, \
-    "sx=" dim[aws]["x"], \
-    "sy=" dim[aws]["y"], \
-    "sw=" dim[aws]["w"], \
-    "sh=" dim[aws]["h"] 
+    "sx=" ac[awsid]["x"], \
+    "sy=" ac[awsid]["y"], \
+    "sw=" ac[awsid]["w"], \
+    "sh=" ac[awsid]["h"] 
   for (w in avis) {
     if(w==act)
       printf "* "

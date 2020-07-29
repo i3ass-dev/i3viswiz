@@ -6,27 +6,22 @@ main(){
 
   declare -g _json
 
+  target=${__lastarg:-X}
+
   if [[ -n ${__o[title]} ]]; then
     type=title
-    target="${__lastarg:-}"
   elif [[ -n ${__o[titleformat]} ]]; then
     type=titleformat
-    target="${__lastarg:-}"
-  elif [[ -n ${__o[instance]:-} ]]; then
+  elif [[ -n ${__o[instance]} ]]; then
     type=instance
-    target="${__lastarg:-}"
-  elif [[ -n ${__o[class]:-} ]]; then
+  elif [[ -n ${__o[class]} ]]; then
     type=class
-    target="${__lastarg:-}"
-  elif [[ -n ${__o[winid]:-} ]]; then
+  elif [[ -n ${__o[winid]} ]]; then
     type=winid
-    target="${__lastarg:-}"
-  elif [[ -n ${__o[parent]:-} ]]; then
+  elif [[ -n ${__o[parent]} ]]; then
     type=parent
-    target="${__lastarg:-}"
   else
     type="direction"
-    target="${__lastarg:-}"
     target="${target,,}"
     target="${target:0:1}"
 
@@ -44,18 +39,18 @@ main(){
 
   result="$(listvisible "$type"        \
                         "${__o[gap]}"  \
-                        "${target:-X}" \
+                        "$target" \
                         "$_json"
            )"
 
-  if ((${__o[focus]:-0}==1)); then
+  if ((__o[focus])); then
+
     [[ $result =~ ^[0-9]+$ ]] \
-      && i3-msg -q "[con_id=$result]" focus \
-      || exit 1
-  elif [[ $type != direction ]]; then
-    echo "$result"
-  else
-    eval "$(echo -e "$result" | head -1)"
+      && exec i3-msg -q "[con_id=$result]" focus
+    exit 1
+
+  elif [[ $type = direction ]]; then
+    eval "$(head -1 <<< "$result")"
 
     if [[ ${trgcon:=} = floating ]]; then
 
@@ -69,18 +64,19 @@ main(){
       i3-msg -q focus $dir
 
     else
-      [[ -z $trgcon ]] && {
-        ((__o[gap]+=75))
+      [[ -z $trgcon ]] && ((__o[gap]+=15)) && {
         eval "$(listvisible "$type"        \
                             "${__o[gap]}"  \
-                            "${target:-X}" \
+                            "$target" \
                             "$_json" | head -1
-             )"
+               )"
       }
 
       [[ -n $trgcon ]] \
         && i3-msg -q "[con_id=$trgcon]" focus
     fi
+  else
+    echo "$result"
   fi
 }
 
