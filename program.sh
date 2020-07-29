@@ -3,7 +3,7 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-i3viswiz - version: 0.209
+i3viswiz - version: 0.233
 updated: 2020-07-29 by budRich
 EOB
 }
@@ -189,52 +189,50 @@ awklib() {
 cat << 'EOB'
 # BEGIN{focs=0 end=0 csid="first" actfloat=""}
 END{
-  print "this is the end"
+
   listvis(awsid)
-  print "dones"
   wall="none"
 
-  # wsh=int(ac[awsid]["h"])
-  # wsw=int(ac[awsid]["w"])
-  # wsx=int(ac[awsid]["x"])
-  # wsy=int(ac[awsid]["y"])
+  switch (dir) {
 
-  if (dir=="r"){
-    trgx=ac[act]["x"]+ac[act]["w"]+gapsz
-    trgy=(gapsz+ac[act]["y"])+ac[act]["h"]/2
+    case "r":
+      trgx=ac[act]["x"]+ac[act]["w"]+gapsz
+      trgy=(gapsz+ac[act]["y"])+ac[act]["h"]/2
 
-    if(trgx>(wsw+wsx)){
-      trgx=gapsz
-      wall="right"
-    }
-  }
+      if(trgx>(wsw+wsx)){
+        trgx=gapsz
+        wall="right"
+      }
+    break
 
-  if (dir=="l"){
-    trgx=ac[act]["x"]-gapsz
-    trgy=(gapsz+ac[act]["y"])+ac[act]["h"]/2
-    if(trgx<wsx){
-      trgx=waw-gapsz
-      wall="left"
-    }
-  }
+    case "l":
+      trgx=ac[act]["x"]-gapsz
+      trgy=(gapsz+ac[act]["y"])+ac[act]["h"]/2
+      if(trgx<wsx){
+        trgx=waw-gapsz
+        wall="left"
+      }
+    break
 
-  if (dir=="u"){
-    trgx=(gapsz+ac[act]["x"])+ac[act]["w"]/2
-    trgy=ac[act]["y"]-gapsz
-    if(trgy<wsy){
-      trgy=ac[awsid]["h"]-gapsz
-      wall="up"
-    }
-  }
+    case "u":
+      trgx=(gapsz+ac[act]["x"])+ac[act]["w"]/2
+      trgy=ac[act]["y"]-gapsz
+      if(trgy<wsy){
+        trgy=ac[awsid]["h"]-gapsz
+        wall="up"
+      }
+    break
 
-  if (dir=="d"){
-    trgx=(gapsz+ac[act]["x"])+ac[act]["w"]/2
-    trgy=ac[act]["y"]+ac[act]["h"]+gapsz
+    case "d":
+      trgx=(gapsz+ac[act]["x"])+ac[act]["w"]/2
+      trgy=ac[act]["y"]+ac[act]["h"]+gapsz
+      
+      if(trgy>(wsh+wsy)){
+        trgy=gapsz
+        wall="down"
+      }
+    break
     
-    if(trgy>(wsh+wsy)){
-      trgy=gapsz
-      wall="down"
-    }
   }
 
   trgx=int(trgx)
@@ -308,48 +306,25 @@ END{
 function listvis(id,stackh,trg,layout) {
 
   layout=ac[id]["layout"]
-  # print id " --  " ac[id]["layout"]
 
-  if (layout ~ /tabbed|stacked/) {
-    trg=ac[id]["focused"]
-    if (layout == "stacked") {
-      # print trg
-      stackh=length(ac[id]["children"])
-      ac[trg]["h"]+=(ac[trg]["b"]*stackh)
-      ac[trg]["y"]-=(ac[trg]["b"]*stackh)
-    }
-    listvis(trg)
-  } else if (layout ~ /splitv|plith/) {
-    for (trg in ac[id]["children"]) {
-    # l=length(ac[trg]["children"])
-      if ("children" in ac[trg]) {
-        print layout " " length(ac[trg]["children"])
+  if ("children" in ac[id]) {
+
+    if (layout ~ /tabbed|stacked/) {
+      trg=ac[id]["focused"]
+      if (layout == "stacked") {
+        stackh=length(ac[id]["children"])
+        ac[trg]["h"]+=(ac[trg]["b"]*stackh)
+        ac[trg]["y"]-=(ac[trg]["b"]*stackh)
+      }
+      listvis(trg)
+    } else if (layout ~ /^split/) {
+      for (trg in ac[id]["children"]) {
         listvis(trg)
       }
-      else if (ac[trg]["f"]!=1) {
-        avis[trg]=trg
-      }
     }
+  } else if (ac[id]["f"]!=1) {
+    avis[id]=id
   }
-
-  # split(ac[id]["childs"],achld," ")
-
-  # for (curc in ac[id]["children"]) {
-  #   # curc=achld[c]
-  #   # gsub("[^0-9]","",curc)
-
-  #   # if(curc==""){continue}
-
-  #   if(ac[id]["layout"]=="stacked"){
-  #     ac[curc]["h"]+=(ac[curc]["b"]*stackh)
-  #     ac[curc]["y"]-=(ac[curc]["b"]*stackh)
-  #   }
-
-  #   if (ac[curc]["childs"]!="")
-  #     listvis(curc)
-  #   else if (ac[curc]["f"]!=1)
-  #     avis[curc]=curc
-  # }
 }
 
 # opret="$type" gapsz="${__o[gap]}" dir="$target"
