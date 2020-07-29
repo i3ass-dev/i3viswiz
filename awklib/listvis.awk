@@ -14,6 +14,9 @@ function listvis(id,stackh,trg,layout) {
         stackh=length(ac[id]["children"])
         ac[trg]["h"]+=(ac[trg]["b"]*stackh)
         ac[trg]["y"]-=(ac[trg]["b"]*stackh)
+      } else {
+        ac[trg]["h"]+=ac[trg]["b"]
+        ac[trg]["y"]-=ac[trg]["b"]
       }
       listvis(trg)
     } else if (layout ~ /^split/) {

@@ -2,7 +2,6 @@ END{
 
   wall="none"
 
-  split("x y w h",geo," ")
   for (s in geo) {
     c["ws" geo[s]]=int(ac[awsid][geo[s]])
     c["aw" geo[s]]=int(ac[act][geo[s]])
@@ -86,7 +85,7 @@ END{
   for (w in visiblecontainers) {
 
     printf("%s %d ", (w==act ? "*" : "-" ), w)
-    for (s in geo) { printf("%2s %-6s", geo[s]":", ac[w][geo[s]]) }
+    for (s in geo) { printf("%2s %-6s", substr(geo[s],1,1)":", ac[w][geo[s]]) }
 
     print (opret ~ /title|class|parent|instance|titleformat|winid/ ?
           "| " gensub(/"/,"","g",ac[w][opret]) : "") 
