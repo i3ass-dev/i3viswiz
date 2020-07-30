@@ -1,5 +1,5 @@
 .nh
-.TH I3VISWIZ 1 2020\-07\-29 Linux "User Manuals"
+.TH I3VISWIZ 1 2020\-07\-30 Linux "User Manuals"
 .SH NAME
 .PP
 \fB\fCi3viswiz\fR \- Professional window focus for i3wm
@@ -9,7 +9,7 @@
 .RS
 
 .nf
-i3viswiz [\-\-gap|\-g GAPSIZE] DIRECTION       [\-\-json JSON]
+i3viswiz [\-\-gap|\-g GAPSIZE] DIRECTION  [\-\-json JSON]
 i3viswiz [\-\-focus|\-f] \-\-title|\-t       [TARGET] [\-\-json JSON]
 i3viswiz [\-\-focus|\-f] \-\-instance|\-i    [TARGET] [\-\-json JSON]
 i3viswiz [\-\-focus|\-f] \-\-class|\-c       [TARGET] [\-\-json JSON]
@@ -36,11 +36,14 @@ there are no windows in the given direction.
 
 .SH OPTIONS
 .PP
-\fB\fC\-\-gap\fR|\fB\fC\-g\fR GAPSIZE
+\fB\fC\-\-gap\fR|\fB\fC\-g\fR DIRECTION
 .br
 Set GAPSIZE (defaults to 5). GAPSIZE is the
 distance in pixels from the current window where
 new focus will be searched.
+
+.PP
+\fB\fC\-\-json\fR JSON
 
 .PP
 \fB\fC\-\-focus\fR|\fB\fC\-f\fR
@@ -58,9 +61,6 @@ window, that windows  \fBCON\_ID\fP will get printed
 to \fB\fCstdout\fR\&. If no \fBTARGET\fP is specified, a list
 of all tiled windows will get printed with
 \fBTITLE\fP as the last field of each row.
-
-.PP
-\fB\fC\-\-json\fR JSON
 
 .PP
 \fB\fC\-\-instance\fR|\fB\fC\-i\fR [TARGET]

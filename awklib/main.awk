@@ -1,126 +1,140 @@
 #!/bin/awk
 
-# opret="$type" gapsz="${__o[gap]}" dir="$target"
-
-# BEGIN{focs=0;end=0;csid="first";actfloat=""}
-
-$(NF-1) ~ /"(nodes|deco_rect|rect|id|window|title|num|width|height|x|y|floating|marks|layout|focused|instance|class)"$/ {
-  
-  key=gensub(/.*"([^"]+)"$/,"\\1","g",$(NF-1))
-  var=gensub(/[["]*([^]}"]+)[]}"]*$/,"\\1","g",$NF)
-
-  switch (key) {
-    case "nodes":
-    break
-    case "type":
-    break
-    case "id":
-    break
-    case "layout":
-    break
-    case "rect":
-    break
-    case "deco_rect":
-    break
-    case "num":
-    break
-    case "focused":
-    break
-    case "window":
-    break
-    case "title_format":
-    break
-    case "title":
-    break
-    case "class":
-    break
-    case "instance":
-    break
-    case "marks":
-    break
-    case "floating":
-    break
-    case "focus":
-    break
-  }
-}
-
-$1 ~ /"nodes"/ && ac[cid]["counter"] == "go"  && $2 != "[]" {
+$1 == "\"type\"" {type=$2}
+$1 == "\"nodes\"" && ac[cid]["counter"] == "go"  && $2 != "[]" {
   ac[cid]["counter"]=csid
   csid=cid
 }
- # types: con,floating_con,dockarea,root,output
-$1 ~ /"type"/ {type=$2}
 
-$(NF-1) ~ /"id"/        {cid=$NF}
-$1      ~ /"layout"/    {clo=gensub(/"/,"","g",$2)}
-
-$1      ~ /"rect"/ && type ~ /con|workspace/ {
-  for (gotarray=0; !gotarray; getline) {
-    match($0,/"([^"]+)":([0-9]+)([}])?$/,ma)
-    ac[cid][ma[1]]=ma[2]
-    gotarray=(ma[3] == "}" ? 1 : 0)
-  }
-}
-
-$1 ~ /"deco_rect"/ && type == "con" {
-  getline # "x":0
-  getline # "y":0
-  getline # "width":0
-          # "height":0}
-  titlebarheight=gensub(/([0-9]+)/,"\\1",1,$2)
-  ac[cid]["b"]=titlebarheight
-}
-
-$1 ~ /"num"/ {
-  cws=$2    # current workspace number
-  cwsid=cid # current workspace id
-}
-
-/^"focused":true$/ {
-  act=cid      # active containre id
-  aws=cws      # active workspace number
-  awsid=cwsid  # active workspace id
-}
-
-$1=="\"window\"" && $2=="null" {
-  ac[cid]["layout"]=clo
-  ac[cid]["counter"]="go"
-  ac[cid]["focused"]="X"
-}
-
-$1      ~ /"title_format"/ {ac[cid]["titleformat"]=$2}
-$1      ~ /"title"/        {ac[cid]["title"]=$2}
-$1      ~ /"window"/       {ac[cid]["winid"]=$2}
-$(NF-1) ~ /"class"/        {ac[cid]["class"]=$NF}
-
-# curpar current parent container (i34A|B|C|D)
-$1 ~ /"marks"/ && match($2,/"i34(.)"/,ma) {curpar=ma[1]}
-$1 ~ /"instance"/ {
-  ac[cid]["instance"]=$2
-  ac[cid]["parent"]=curpar
-}
-
-/^"floating":.+_on"$/ {
-  if(cid==act){actfloat="floating"}
-  ac[cid]["f"]=1
-}
-
-/"focus"/ && $2 != "[]" {
+type ~ /con|workspace["]$/ && $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|focus)"$/ {
   
-  for (gotarray=0; !gotarray; getline) {
+  key=gensub(/.*"([^"]+)"$/,"\\1","g",$(NF-1))
+  switch (key) {
 
-    child=gensub(/[][]/,"","g",$NF)
+    case "id":
+      cid=$NF
+      allcontainers[++concount]=cid
+    break
 
-    if(ac[csid]["focused"]=="X") {
-      ac[csid]["focused"]=child
-    }
+    case "layout":
+      clo=$2
+    break
 
-    ac[csid]["children"][child]=1
-    ac[csid]["childs"] = child " " ac[csid]["childs"]
-    gotarray=($NF ~ /[]]$/ ? 1 : 0)
+    case "x":
 
+      if ($1 ~ /"rect"/) {
+        for (gotarray=0; !gotarray; getline) {
+          match($0,/"([^"]+)":([0-9]+)([}])?$/,ma)
+          ac[cid][ma[1]]=ma[2]
+          gotarray=(ma[3] == "}" ? 1 : 0)
+        }
+      }
+
+      if ($1 ~ /"deco_rect"/) {
+        getline # "x":0
+        getline # "y":0
+        getline # "width":0
+                # "height":0}
+        titlebarheight=gensub(/[^0-9]/,"","g",$2)
+        ac[cid]["b"]=titlebarheight
+      } 
+      
+    break
+
+    case "num":
+      cws=$2    # current workspace number
+      cwsid=cid # current workspace id
+    break
+
+    case "focused":
+      if ($NF == "true") {
+        act=cid      # active containre id
+        aws=cws      # active workspace number
+        awsid=cwsid  # active workspace id
+        getorder=1   # check order when making children
+      }
+    break
+
+    case "window":
+      if ($NF == "null") {
+        ac[cid]["layout"]=clo
+        ac[cid]["counter"]="go"
+        ac[cid]["focused"]="X"
+      } 
+      else
+        ac[cid]["winid"]=$NF
+
+    break
+
+    case "title_format":
+      ac[cid]["titleformat"]=$NF
+    break
+
+    case "title":
+      ac[cid]["title"]=$NF
+    break
+
+    case "class":
+      ac[cid]["class"]=$NF
+    break
+
+    case "instance":
+      ac[cid]["instance"]=$NF
+      ac[cid]["parent"]=curpar
+    break
+
+    case "marks":
+      if (match($2,/"i34(.)"/,ma)) {
+        curpar=ma[1]
+        parents[curpar]=cid
+      }
+    break
+
+    case "floating":
+      if ($NF ~ /_on$/) {
+        if(cid==act){actfloat="floating"}
+        ac[cid]["f"]=1
+      }
+    break
+
+    case "focus":
+      if ($2 != "[]") {
+        
+        for (gotarray=0; !gotarray; getline) {
+
+          child=gensub(/[][]/,"","g",$NF)
+ 
+          if(ac[csid]["focused"]=="X") {
+            ac[csid]["focused"]=child
+          }
+
+          ac[csid]["children"][child]=1
+          # ac[csid]["childs"] = child " " ac[csid]["childs"]
+          gotarray=($NF ~ /[]]$/ ? 1 : 0)
+
+        }
+
+        if (getorder) {
+
+          nchilds=length(ac[csid]["children"])
+          for (i=1;i<nchilds+1;i++) {
+            indx=(concount-nchilds)+i
+            curry=allcontainers[indx]
+
+            if (i==1)
+              firstingroup=curry
+            if (curry == act)
+              grouppos=i
+          }
+          
+          lastingroup=curry
+          grouplayout=ac[csid]["layout"]
+          groupid=csid
+          groupsize=nchilds
+          getorder=0
+        }
+        csid=ac[csid]["counter"]
+      }
+    break
   }
-
-  csid=ac[csid]["counter"]
 }

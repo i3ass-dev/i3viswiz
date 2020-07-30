@@ -3,8 +3,8 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-i3viswiz - version: 0.304
-updated: 2020-07-29 by budRich
+i3viswiz - version: 0.425
+updated: 2020-07-30 by budRich
 EOB
 }
 
@@ -19,7 +19,7 @@ i3viswiz - Professional window focus for i3wm
 
 SYNOPSIS
 --------
-i3viswiz [--gap|-g GAPSIZE] DIRECTION       [--json JSON]
+i3viswiz [--gap|-g GAPSIZE] DIRECTION  [--json JSON]
 i3viswiz [--focus|-f] --title|-t       [TARGET] [--json JSON]
 i3viswiz [--focus|-f] --instance|-i    [TARGET] [--json JSON]
 i3viswiz [--focus|-f] --class|-c       [TARGET] [--json JSON]
@@ -32,11 +32,13 @@ i3viswiz --version|-v
 OPTIONS
 -------
 
---gap|-g GAPSIZE  
+--gap|-g DIRECTION  
 Set GAPSIZE (defaults to 5). GAPSIZE is the
 distance in pixels from the current window where
 new focus will be searched.  
 
+
+--json JSON  
 
 --focus|-f  
 When used in conjunction with: --titleformat,
@@ -52,8 +54,6 @@ If no TARGET is specified, a list of all tiled
 windows will get printed with  TITLE as the last
 field of each row.
 
-
---json JSON  
 
 --instance|-i [TARGET]  
 If TARGET matches the INSTANCE of a visible
@@ -114,7 +114,7 @@ declare -A __o
 options="$(
   getopt --name "[ERROR]:i3viswiz" \
     --options "g:fticodphv" \
-    --longoptions "gap:,focus,title,json:,instance,class,titleformat,winid,parent,help,version," \
+    --longoptions "gap:,json:,focus,title,instance,class,titleformat,winid,parent,help,version," \
     -- "$@" || exit 98
 )"
 
@@ -124,9 +124,9 @@ unset options
 while true; do
   case "$1" in
     --gap        | -g ) __o[gap]="${2:-}" ; shift ;;
+    --json       ) __o[json]="${2:-}" ; shift ;;
     --focus      | -f ) __o[focus]=1 ;; 
     --title      | -t ) __o[title]=1 ;; 
-    --json       ) __o[json]="${2:-}" ; shift ;;
     --instance   | -i ) __o[instance]=1 ;; 
     --class      | -c ) __o[class]=1 ;; 
     --titleformat | -o ) __o[titleformat]=1 ;; 

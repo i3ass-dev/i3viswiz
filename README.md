@@ -3,7 +3,7 @@
 ### usage
 
 ```text
-i3viswiz [--gap|-g GAPSIZE] DIRECTION       [--json JSON]
+i3viswiz [--gap|-g GAPSIZE] DIRECTION  [--json JSON]
 i3viswiz [--focus|-f] --title|-t       [TARGET] [--json JSON]
 i3viswiz [--focus|-f] --instance|-i    [TARGET] [--json JSON]
 i3viswiz [--focus|-f] --class|-c       [TARGET] [--json JSON]
@@ -27,10 +27,12 @@ given direction.
 OPTIONS
 -------
 
-`--gap`|`-g` GAPSIZE  
+`--gap`|`-g` DIRECTION  
 Set GAPSIZE (defaults to 5). GAPSIZE is the distance in
 pixels from the current window where new focus will be
 searched.  
+
+`--json` JSON  
 
 `--focus`|`-f`  
 When used in conjunction with: `--titleformat`, `--title`,
@@ -43,8 +45,6 @@ If **TARGET** matches the **TITLE** of a visible window,
 that windows  **CON_ID** will get printed to `stdout`. If no
 **TARGET** is specified, a list of all tiled windows will
 get printed with  **TITLE** as the last field of each row.
-
-`--json` JSON  
 
 `--instance`|`-i` [TARGET]  
 If **TARGET** matches the **INSTANCE** of a visible window,

@@ -44,7 +44,6 @@ main(){
            )"
 
   if ((__o[focus])); then
-
     [[ $result =~ ^[0-9]+$ ]] \
       && exec i3-msg -q "[con_id=$result]" focus
     exit 1
@@ -74,6 +73,8 @@ main(){
 
       [[ -n $trgcon ]] \
         && i3-msg -q "[con_id=$trgcon]" focus
+
+      ERM "$result"
     fi
   else
     echo "$result"
