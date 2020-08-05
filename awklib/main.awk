@@ -24,7 +24,7 @@ type ~ /con|workspace["]$/ && $(NF-1) ~ /"(id|window|title|num|x|floating|marks|
 
       if ($1 ~ /"rect"/) {
         for (gotarray=0; !gotarray; getline) {
-          match($0,/"([^"]+)":([0-9]+)([}])?$/,ma)
+          match($0,/"([^"])[^"]*":([0-9]+)([}])?$/,ma)
           ac[cid][ma[1]]=ma[2]
           gotarray=(ma[3] == "}" ? 1 : 0)
         }
@@ -116,9 +116,9 @@ type ~ /con|workspace["]$/ && $(NF-1) ~ /"(id|window|title|num|x|floating|marks|
 
         if (getorder) {
 
-          nchilds=length(ac[csid]["children"])
-          for (i=1;i<nchilds+1;i++) {
-            indx=(concount-nchilds)+i
+          groupsize=length(ac[csid]["children"])
+          for (i=1;i<groupsize+1;i++) {
+            indx=(concount-groupsize)+i
             curry=allcontainers[indx]
 
             if (i==1)
@@ -130,7 +130,6 @@ type ~ /con|workspace["]$/ && $(NF-1) ~ /"(id|window|title|num|x|floating|marks|
           lastingroup=curry
           grouplayout=ac[csid]["layout"]
           groupid=csid
-          groupsize=nchilds
           getorder=0
         }
         csid=ac[csid]["counter"]

@@ -11,7 +11,7 @@ function listvis(id,stackh,trg,layout) {
       trg=ac[id]["focused"]
       if (layout == "stacked") {
         stackh=length(ac[id]["children"])
-        ac[trg]["height"]+=(ac[trg]["b"]*stackh)
+        ac[trg]["h"]+=(ac[trg]["b"]*stackh)
         ac[trg]["y"]-=(ac[trg]["b"]*stackh)
       }
       listvis(trg)
@@ -21,7 +21,7 @@ function listvis(id,stackh,trg,layout) {
       }
     }
   } else if (ac[id]["f"]!=1) {
-    ac[id]["height"]+=ac[id]["b"]
+    ac[id]["h"]+=ac[id]["b"]
     ac[id]["y"]-=ac[id]["b"]
     visiblecontainers[id]=id
   }

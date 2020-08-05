@@ -3,7 +3,7 @@
 awklib() {
 cat << 'EOB'
 BEGIN{
-  split("x y width height",geo," ")
+  
   focs=0; end=0; csid="first"; actfloat=""
 }
 END{
@@ -13,46 +13,49 @@ END{
   # listvis() creates the visiblecontainers array
   listvis(awsid)
 
-  for (s in geo) {
-    c["ws" geo[s]]=int(ac[awsid][geo[s]])
-    c["aw" geo[s]]=int(ac[act][geo[s]])
-  }
+  # shorthand variables 
+  # active workspace (ws) 
+  wsx=int(ac[awsid]["x"]); wsy=int(ac[awsid]["y"])
+  wsw=int(ac[awsid]["w"]); wsh=int(ac[awsid]["h"])
+  # active window (aw)
+  awx=int(ac[act]["x"]);   awy=int(ac[act]["y"])
+  aww=int(ac[act]["w"]);   awh=int(ac[act]["h"])
 
-  if (dir ~ /^l|r|u|d|X$/) {
+  if (dir ~ /^(l|r|u|d|X)$/) {
+    
+    trgx=int((dir == "r" ? awx+aww+gapsz :
+              dir == "l" ? awx-gapsz     :
+              awx+(aww/2)+gapsz ))
 
-    trgx=int((dir == "r" ? c["awx"]+c["awwidth"]+gapsz :
-              dir == "l" ? c["awx"]-gapsz     :
-              c["awx"]+(c["awwidth"]/2)+gapsz ))
-
-    trgy=int((dir == "d" ? c["awy"]+c["awheight"]+gapsz :
-              dir == "u" ? c["awy"]-gapsz     :
-              c["awy"]+(c["awheight"]/2)+gapsz ))
+    trgy=int((dir == "d" ? awy+awh+gapsz :
+              dir == "u" ? awy-gapsz     :
+              awy+(awh/2)+gapsz ))
 
     switch (dir) {
 
       case "r":
-        if(trgx>(c["wswidth"]+c["wsx"])){
+        if(trgx>(wsw+wsx)){
           trgx=gapsz
           wall="right"
         }
       break
 
       case "l":
-        if(trgx<c["wsx"]){
-          trgx=waw-gapsz
+        if(trgx<wsx){
+          trgx=wsw-gapsz
           wall="left"
         }
       break
 
       case "u":
-        if(trgy<c["wsy"]){
-          trgy=ac[awsid]["height"]-gapsz
+        if(trgy<wsy){
+          trgy=ac[awsid]["h"]-gapsz
           wall="up"
         }
       break
 
       case "d":
-        if(trgy>(c["wsheight"]+c["wsy"])){
+        if(trgy>(wsh+wsy)){
           trgy=gapsz
           wall="down"
         }
@@ -61,15 +64,15 @@ END{
 
     if (actfloat=="") {
 
-      for (w in visiblecontainers) {
+      for (conid in visiblecontainers) {
 
-        cwx=ac[w]["x"] ; cww=ac[w]["width"]
-        cwy=ac[w]["y"] ; cwh=ac[w]["height"]
+        cwx=ac[conid]["x"] ; cww=ac[conid]["w"]
+        cwy=ac[conid]["y"] ; cwh=ac[conid]["h"]
         cex=cwx+cww    ; cey=cwy+cwh
 
         if (cwx <= trgx && trgx <= cex && cwy <= trgy && trgy <= cey) {
-          tpar=ac[w]["parent"]
-          tcon=w
+          tpar=ac[conid]["parent"]
+          tcon=conid
           break
         }  
       }
@@ -79,30 +82,34 @@ END{
   }
 
   else if (opret ~ /title|class|parent|instance|titleformat|winid/) {
-    for (w in visiblecontainers) {
-      if (ac[w][opret] ~ dir) {print w ;exit}
+
+    for (conid in visiblecontainers) {
+      if (ac[conid][opret] ~ dir) {print conid ;exit}
     }
+    exit
   }
 
   else
     exit
 
-  firstline="trgcon=%d trgx=%d trgy=%d wall=%s trgpar=%s "
-  firstline=firstline "sx=%d sy=%d sw=%d sh=%d groupsize=%s "
-  firstline=firstline "grouppos=%d firstingroup=%d lastingroup=%d "
-  firstline=firstline "grouplayout=%s groupid=%d gap=%d"
-  printf(firstline"\n",tcon,trgx,trgy,wall,tpar,
-                      c[awx],c[awy],c[aww],c[awh],
-                      groupsize, grouppos, firstingroup,
-                      lastingroup, grouplayout, groupid, gapsz)
+  head1="trgcon=%d trgx=%d trgy=%d wall=%s trgpar=%s "
+  head1=head1 "sx=%d sy=%d sw=%d sh=%d groupsize=%s "
+  head1=head1 "grouppos=%d firstingroup=%d lastingroup=%d "
+  head1=head1 "grouplayout=%s groupid=%d gap=%d"
 
-  for (w in visiblecontainers) {
+  printf(head1"\n",tcon,trgx,trgy,wall,tpar,
+                   wsx,wsy,wsw,wsh,
+                   groupsize, grouppos, firstingroup,
+                   lastingroup, grouplayout, groupid, gapsz)
 
-    printf("%s %d ", (w==act ? "*" : "-" ), w)
-    for (s in geo) { printf("%2s %-6s", substr(geo[s],1,1)":", ac[w][geo[s]]) }
+  split("x y w h",geo," ")
+  for (conid in visiblecontainers) {
+
+    printf("%s %d ", (conid==act ? "*" : "-" ), conid)
+    for (s in geo) { printf("%2s %-6s", geo[s] ":", ac[conid][geo[s]]) }
 
     print (opret ~ /title|class|parent|instance|titleformat|winid/ ?
-          "| " gensub(/"/,"","g",ac[w][opret]) : "") 
+          "| " gensub(/"/,"","g",ac[conid][opret]) : "") 
   }
 
   # example output:
@@ -123,7 +130,7 @@ function listvis(id,stackh,trg,layout) {
       trg=ac[id]["focused"]
       if (layout == "stacked") {
         stackh=length(ac[id]["children"])
-        ac[trg]["height"]+=(ac[trg]["b"]*stackh)
+        ac[trg]["h"]+=(ac[trg]["b"]*stackh)
         ac[trg]["y"]-=(ac[trg]["b"]*stackh)
       }
       listvis(trg)
@@ -133,7 +140,7 @@ function listvis(id,stackh,trg,layout) {
       }
     }
   } else if (ac[id]["f"]!=1) {
-    ac[id]["height"]+=ac[id]["b"]
+    ac[id]["h"]+=ac[id]["b"]
     ac[id]["y"]-=ac[id]["b"]
     visiblecontainers[id]=id
   }
@@ -164,7 +171,7 @@ type ~ /con|workspace["]$/ && $(NF-1) ~ /"(id|window|title|num|x|floating|marks|
 
       if ($1 ~ /"rect"/) {
         for (gotarray=0; !gotarray; getline) {
-          match($0,/"([^"]+)":([0-9]+)([}])?$/,ma)
+          match($0,/"([^"])[^"]*":([0-9]+)([}])?$/,ma)
           ac[cid][ma[1]]=ma[2]
           gotarray=(ma[3] == "}" ? 1 : 0)
         }
@@ -256,9 +263,9 @@ type ~ /con|workspace["]$/ && $(NF-1) ~ /"(id|window|title|num|x|floating|marks|
 
         if (getorder) {
 
-          nchilds=length(ac[csid]["children"])
-          for (i=1;i<nchilds+1;i++) {
-            indx=(concount-nchilds)+i
+          groupsize=length(ac[csid]["children"])
+          for (i=1;i<groupsize+1;i++) {
+            indx=(concount-groupsize)+i
             curry=allcontainers[indx]
 
             if (i==1)
@@ -270,7 +277,6 @@ type ~ /con|workspace["]$/ && $(NF-1) ~ /"(id|window|title|num|x|floating|marks|
           lastingroup=curry
           grouplayout=ac[csid]["layout"]
           groupid=csid
-          groupsize=nchilds
           getorder=0
         }
         csid=ac[csid]["counter"]
