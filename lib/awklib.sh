@@ -21,15 +21,18 @@ END{
   awx=int(ac[act]["x"]);   awy=int(ac[act]["y"])
   aww=int(ac[act]["w"]);   awh=int(ac[act]["h"])
 
+  awb=int(ac[act]["b"])
+
   if (dir ~ /^(l|r|u|d|X)$/) {
     
     trgx=int((dir == "r" ? awx+aww+gapsz :
               dir == "l" ? awx-gapsz     :
               awx+(aww/2)+gapsz ))
 
-    trgy=int((dir == "d" ? awy+awh+gapsz :
-              dir == "u" ? awy-gapsz     :
-              awy+(awh/2)+gapsz ))
+    # add awb (active window titlebar height) to gapsize
+    trgy=int((dir == "d" ? awy+awh+(gapsz+awb) :
+              dir == "u" ? awy-(gapsz+awb)     :
+              awy+(awh/2)+(gapsz+awb) ))
 
     switch (dir) {
 
@@ -68,6 +71,7 @@ END{
 
         cwx=ac[conid]["x"] ; cww=ac[conid]["w"]
         cwy=ac[conid]["y"] ; cwh=ac[conid]["h"]
+
         cex=cwx+cww    ; cey=cwy+cwh
 
         if (cwx <= trgx && trgx <= cex && cwy <= trgy && trgy <= cey) {
