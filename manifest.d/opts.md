@@ -2,6 +2,9 @@
 
 When used in conjunction with: `--titleformat`, `--title`, `--class`, `--instance`, `--winid` or `--parent`. The **CON_ID** of **TARGET** window will get focused if it is visible.
 
+# options-json-description
+use JSON instead of output from  `i3-msg -t get_tree` 
+
 # options-titleformat-description
 
 If **TARGET** matches the **TITLE_FORMAT** of a visible window, that windows 

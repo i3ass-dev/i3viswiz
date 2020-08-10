@@ -25,22 +25,16 @@ main(){
     target="${target,,}"
     target="${target:0:1}"
 
-    [[ ! $target =~ l|r|u|d ]] && {
-      ___printhelp
-      exit
-    }
+    [[ $target =~ l|r|u|d ]] \
+      || ERH "$__lastarg not valid command"
 
   fi
-
-  [[ -n ${_json:=${__o[json]}} ]] \
-    || _json=$(i3-msg -t get_tree)
 
   : "${__o[gap]:=5}"
 
   result="$(listvisible "$type"        \
                         "${__o[gap]}"  \
-                        "$target" \
-                        "$_json"
+                        "$target"      \
            )"
 
   if ((__o[focus])); then
@@ -66,15 +60,13 @@ main(){
       [[ -z $trgcon ]] && ((__o[gap]+=15)) && {
         eval "$(listvisible "$type"        \
                             "${__o[gap]}"  \
-                            "$target" \
-                            "$_json" | head -1
+                            "$target" | head -1
                )"
       }
 
       [[ -n $trgcon ]] \
         && i3-msg -q "[con_id=$trgcon]" focus
 
-      ERM "$result"
     fi
   else
     echo "$result"

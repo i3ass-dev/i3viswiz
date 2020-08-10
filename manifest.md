@@ -1,8 +1,8 @@
 ---
 description: >
   Professional window focus for i3wm
-updated:       2020-08-07
-version:       0.464
+updated:       2020-08-10
+version:       0.467
 author:        budRich
 repo:          https://github.com/budlabs/i3ass
 created:       2018-01-18
@@ -10,12 +10,12 @@ dependencies:  [bash, gawk, i3]
 see-also:      [bash(1), awk(1), i3(1)]
 synopsis: |
     [--gap|-g GAPSIZE] DIRECTION  [--json JSON]
-    [--focus|-f] --title|-t       [TARGET] [--json JSON]
-    [--focus|-f] --instance|-i    [TARGET] [--json JSON]
-    [--focus|-f] --class|-c       [TARGET] [--json JSON]
-    [--focus|-f] --titleformat|-o [TARGET] [--json JSON]
-    [--focus|-f] --winid|-d       [TARGET] [--json JSON]
-    [--focus|-f] --parent|-p      [TARGET] [--json JSON]
+    --title|-t       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+    --instance|-i    [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+    --class|-c       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+    --titleformat|-o [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+    --winid|-d       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+    --parent|-p      [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
     --help|-h
     --version|-v
 ...
@@ -34,17 +34,17 @@ Normal binding:
 bindsym Mod4+Shift+Left   focus left
 
 Wizzy binding:
-bindsym Mod4+Left   exec --no-startup-id i3viswiz l 
+bindsym Mod4+Left   exec --no-startup-id i3viswiz left
 ```
 
 example output:  
 ``` text
-$ i3viswiz -o -g 20 down
-target_con_id: 94851559487504
-tx: 582 ty: 470 wall: none
+$ i3viswiz --class --gap 20 down
+trgcon=94125805431344 trgx=1329 trgy=828 wall=none trgpar=C sx=0 sy=0 sw=1920 sh=1080 groupsize=3 grouppos=3 firstingroup=94125805065424 lastingroup=94125805553936 grouplayout="tabbed" groupid=94125805519264 gap=5
 * 94851560291216 x: 0     y: 0     w: 1165  h: 450   | URxvt
 - 94851559487504 x: 0     y: 451   w: 1165  h: 448   | sublime
 - 94851560318768 x: 1166  y: 0     w: 433   h: 899   | bin
 ```
 
-
+If `--class , --instance, --title, --titleformat, --winid or --parent` is used together with a DIRECTION. i3viswiz will print this output, with the type in the last column of the table (class in the example above). The first line contains a lot of useful pseudo variables that is used by other scripts in **i3ass** 
+`eval "$(i3viswiz -p d)" ; echo "$groupsize"`

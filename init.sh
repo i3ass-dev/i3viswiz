@@ -3,8 +3,8 @@
 ___printversion(){
   
 cat << 'EOB' >&2
-i3viswiz - version: 0.464
-updated: 2020-08-07 by budRich
+i3viswiz - version: 0.467
+updated: 2020-08-10 by budRich
 EOB
 }
 
@@ -20,25 +20,36 @@ i3viswiz - Professional window focus for i3wm
 SYNOPSIS
 --------
 i3viswiz [--gap|-g GAPSIZE] DIRECTION  [--json JSON]
-i3viswiz [--focus|-f] --title|-t       [TARGET] [--json JSON]
-i3viswiz [--focus|-f] --instance|-i    [TARGET] [--json JSON]
-i3viswiz [--focus|-f] --class|-c       [TARGET] [--json JSON]
-i3viswiz [--focus|-f] --titleformat|-o [TARGET] [--json JSON]
-i3viswiz [--focus|-f] --winid|-d       [TARGET] [--json JSON]
-i3viswiz [--focus|-f] --parent|-p      [TARGET] [--json JSON]
+i3viswiz --title|-t       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+i3viswiz --instance|-i    [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+i3viswiz --class|-c       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+i3viswiz --titleformat|-o [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+i3viswiz --winid|-d       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
+i3viswiz --parent|-p      [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON]
 i3viswiz --help|-h
 i3viswiz --version|-v
 
 OPTIONS
 -------
 
---gap|-g DIRECTION  
+--gap|-g TARGET  
 Set GAPSIZE (defaults to 5). GAPSIZE is the
 distance in pixels from the current window where
 new focus will be searched.  
 
 
 --json JSON  
+use JSON instead of output from  i3-msg -t
+get_tree
+
+
+--title|-t  
+If TARGET matches the TITLE of a visible window,
+that windows  CON_ID will get printed to stdout.
+If no TARGET is specified, a list of all tiled
+windows will get printed with  TITLE as the last
+field of each row.
+
 
 --focus|-f  
 When used in conjunction with: --titleformat,
@@ -47,15 +58,7 @@ The CON_ID of TARGET window will get focused if it
 is visible.
 
 
---title|-t [TARGET]  
-If TARGET matches the TITLE of a visible window,
-that windows  CON_ID will get printed to stdout.
-If no TARGET is specified, a list of all tiled
-windows will get printed with  TITLE as the last
-field of each row.
-
-
---instance|-i [TARGET]  
+--instance|-i  
 If TARGET matches the INSTANCE of a visible
 window, that windows  CON_ID will get printed to
 stdout. If no TARGET is specified, a list of all
@@ -63,7 +66,7 @@ tiled windows will get printed with  INSTANCE as
 the last field of each row.
 
 
---class|-c [TARGET]  
+--class|-c  
 If TARGET matches the CLASS of a visible window,
 that windows  CON_ID will get printed to stdout.
 If no TARGET is specified, a list of all tiled
@@ -71,7 +74,7 @@ windows will get printed with  CLASS as the last
 field of each row.
 
 
---titleformat|-o [TARGET]  
+--titleformat|-o  
 If TARGET matches the TITLE_FORMAT of a visible
 window, that windows  CON_ID will get printed to
 stdout. If no TARGET is specified, a list of all
@@ -79,7 +82,7 @@ tiled windows will get printed with  TITLE_FORMAT
 as the last field of each row.
 
 
---winid|-d [TARGET]  
+--winid|-d  
 If TARGET matches the WIN_ID of a visible window,
 that windows  CON_ID will get printed to stdout.
 If no TARGET is specified, a list of all tiled
@@ -88,7 +91,7 @@ field of each row.
 
 
 
---parent|-p [TARGET]  
+--parent|-p  
 If TARGET matches the PARENT of a visible window,
 that windows  CON_ID will get printed to stdout.
 If no TARGET is specified, a list of all tiled
@@ -113,8 +116,8 @@ done
 declare -A __o
 options="$(
   getopt --name "[ERROR]:i3viswiz" \
-    --options "g:fticodphv" \
-    --longoptions "gap:,json:,focus,title,instance,class,titleformat,winid,parent,help,version," \
+    --options "g:tficodphv" \
+    --longoptions "gap:,json:,title,focus,instance,class,titleformat,winid,parent,help,version," \
     -- "$@" || exit 98
 )"
 
@@ -125,8 +128,8 @@ while true; do
   case "$1" in
     --gap        | -g ) __o[gap]="${2:-}" ; shift ;;
     --json       ) __o[json]="${2:-}" ; shift ;;
-    --focus      | -f ) __o[focus]=1 ;; 
     --title      | -t ) __o[title]=1 ;; 
+    --focus      | -f ) __o[focus]=1 ;; 
     --instance   | -i ) __o[instance]=1 ;; 
     --class      | -c ) __o[class]=1 ;; 
     --titleformat | -o ) __o[titleformat]=1 ;; 
