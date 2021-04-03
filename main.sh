@@ -26,7 +26,7 @@ main(){
     target="${target:0:1}"
 
     [[ $target =~ l|r|u|d ]] \
-      || ERH "$__lastarg not valid command"
+      || ERH "$__lastarg not valid direction (l|r|u|d)"
 
   fi
 
