@@ -15,43 +15,43 @@ END{
 
   awb=int(ac[act]["b"])
 
-  if (dir ~ /^(l|r|u|d|X)$/) {
+  if (arg_target ~ /^(l|r|u|d|X)$/) {
     
-    trgx=int((dir == "r" ? awx+aww+gapsz :
-              dir == "l" ? awx-gapsz     :
-              awx+(aww/2)+gapsz ))
+    trgx=int((arg_target == "r" ? awx+aww+arg_gap :
+              arg_target == "l" ? awx-arg_gap     :
+              awx+(aww/2)+arg_gap ))
 
     # add awb (active window titlebar height) to gapsize
-    trgy=int((dir == "d" ? awy+awh+(gapsz+awb) :
-              dir == "u" ? awy-(gapsz+awb)     :
-              awy+(awh/2)+(gapsz+awb) ))
+    trgy=int((arg_target == "d" ? awy+awh+(arg_gap+awb) :
+              arg_target == "u" ? awy-(arg_gap+awb)     :
+              awy+(awh/2)+(arg_gap+awb) ))
 
-    switch (dir) {
+    switch (arg_target) {
 
       case "r":
         if(trgx>(wsw+wsx)){
-          trgx=gapsz
+          trgx=arg_gap
           wall="right"
         }
       break
 
       case "l":
         if(trgx<wsx){
-          trgx=wsw-gapsz
+          trgx=wsw-arg_gap
           wall="left"
         }
       break
 
       case "u":
         if(trgy<wsy){
-          trgy=ac[awsid]["h"]-gapsz
+          trgy=ac[awsid]["h"]-arg_gap
           wall="up"
         }
       break
 
       case "d":
         if(trgy>(wsh+wsy)){
-          trgy=gapsz
+          trgy=arg_gap
           wall="down"
         }
       break
@@ -77,10 +77,10 @@ END{
       tpar="floating"
   }
 
-  else if (opret ~ /title|class|parent|instance|titleformat|winid/) {
+  else if (arg_type ~ /title|class|parent|instance|titleformat|winid/) {
 
     for (conid in visiblecontainers) {
-      if (ac[conid][opret] ~ dir) {print conid ;exit}
+      if (ac[conid][arg_type] ~ arg_target) {print conid ;exit}
     }
     exit
   }
@@ -96,7 +96,7 @@ END{
   printf(head1"\n",tcon,trgx,trgy,wall,tpar,
                    wsx,wsy,wsw,wsh,
                    groupsize, grouppos, firstingroup,
-                   lastingroup, grouplayout, groupid, gapsz)
+                   lastingroup, grouplayout, groupid, arg_gap)
 
   split("x y w h",geo," ")
   for (conid in visiblecontainers) {
@@ -104,8 +104,8 @@ END{
     printf("%s %d ", (conid==act ? "*" : "-" ), conid)
     for (s in geo) { printf("%2s %-6s", geo[s] ":", ac[conid][geo[s]]) }
 
-    print (opret ~ /title|class|parent|instance|titleformat|winid/ ?
-          "| " gensub(/"/,"","g",ac[conid][opret]) : "") 
+    print (arg_type ~ /title|class|parent|instance|titleformat|winid/ ?
+          "| " gensub(/"/,"","g",ac[conid][arg_type]) : "") 
   }
 
   # example output:

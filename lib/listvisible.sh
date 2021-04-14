@@ -6,6 +6,6 @@ listvisible(){
     || _json=$(i3-msg -t get_tree)
 
   awk -f <(awklib) \
-  FS=: RS=, opret="$1" gapsz="$2" dir="$3" \
+  FS=: RS=, arg_type="$1" arg_gap="$2" arg_target="$3" \
   <<< "$_json"
 }
