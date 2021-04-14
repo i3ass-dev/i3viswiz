@@ -2,8 +2,8 @@
 
 main(){
 
-  local arg_target arg_type dir
-
+  local arg_target arg_type
+  
   declare -g _json
 
   arg_target=${__lastarg:-X}
@@ -26,17 +26,18 @@ main(){
     arg_type="direction"
   fi
 
-  : "${__o[gap]:=5}"
+  declare -i arg_gap=$((__o[gap] ? __o[gap] : 5))
 
-  result="$(listvisible "$arg_type"        \
-                        "${__o[gap]}"  \
-                        "$arg_target"      \
+  result="$(listvisible "$arg_type"   \
+                        "$arg_gap"    \
+                        "$arg_target" \
            )"
 
   if ((__o[focus])); then
     [[ $result =~ ^[0-9]+$ ]] \
-      && exec i3-msg -q "[con_id=$result]" focus
-    exit 1
+      || ERX "focus failed. $result is not a valid containerID"
+
+      exec i3-msg -q "[con_id=$result]" focus
 
   elif [[ $arg_type = direction ]]; then
     eval "$(head -1 <<< "$result")"
@@ -44,25 +45,24 @@ main(){
     if [[ ${trgcon:=} = floating ]]; then
 
       case $arg_target in
-        l ) dir=left   ;;
-        r ) dir=right  ;;
-        u ) dir=left   ;;
-        d ) dir=right  ;;
+        l ) direction=left   ;;
+        r ) direction=right  ;;
+        u ) direction=left   ;;
+        d ) direction=right  ;;
       esac
 
-      i3-msg -q focus $dir
+      exec i3-msg -q focus $direction
 
     else
-      [[ -z $trgcon ]] && ((__o[gap]+=15)) && {
-        eval "$(listvisible "$arg_type"        \
-                            "${__o[gap]}"  \
+      [[ -z $trgcon ]] && ((arg_gap+=15)) && {
+        eval "$(listvisible "$arg_type"   \
+                            "$arg_gap"    \
                             "$arg_target" | head -1
                )"
       }
 
-      [[ -n $trgcon ]] \
-        && i3-msg -q "[con_id=$trgcon]" focus
-
+      [[ $trgcon ]] && exec i3-msg -q "[con_id=$trgcon]" focus
+      
     fi
   else
     echo "$result"
