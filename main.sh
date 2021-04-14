@@ -2,39 +2,35 @@
 
 main(){
 
-  local target type dir
+  local arg_target arg_type dir
 
   declare -g _json
 
-  target=${__lastarg:-X}
+  arg_target=${__lastarg:-X}
+  types=(title titleformat class instance winid parent)
 
-  if [[ -n ${__o[title]} ]]; then
-    type=title
-  elif [[ -n ${__o[titleformat]} ]]; then
-    type=titleformat
-  elif [[ -n ${__o[instance]} ]]; then
-    type=instance
-  elif [[ -n ${__o[class]} ]]; then
-    type=class
-  elif [[ -n ${__o[winid]} ]]; then
-    type=winid
-  elif [[ -n ${__o[parent]} ]]; then
-    type=parent
-  else
-    type="direction"
-    target="${target,,}"
-    target="${target:0:1}"
+  for arg_type in "${types[@]}"; do
+    ((__o[$arg_type])) && break
+    unset arg_type
+  done
 
-    [[ $target =~ l|r|u|d ]] \
+  if [[ -z $arg_type && $arg_target = X ]]; then
+    ERH "no command or option specified"
+  elif [[ -z $arg_type ]]; then
+    arg_target="${arg_target,,}"
+    arg_target="${arg_target:0:1}"
+
+    [[ $arg_target =~ l|r|u|d ]] \
       || ERH "$__lastarg not valid direction (l|r|u|d)"
 
+    arg_type="direction"
   fi
 
   : "${__o[gap]:=5}"
 
-  result="$(listvisible "$type"        \
+  result="$(listvisible "$arg_type"        \
                         "${__o[gap]}"  \
-                        "$target"      \
+                        "$arg_target"      \
            )"
 
   if ((__o[focus])); then
@@ -42,12 +38,12 @@ main(){
       && exec i3-msg -q "[con_id=$result]" focus
     exit 1
 
-  elif [[ $type = direction ]]; then
+  elif [[ $arg_type = direction ]]; then
     eval "$(head -1 <<< "$result")"
 
     if [[ ${trgcon:=} = floating ]]; then
 
-      case $target in
+      case $arg_target in
         l ) dir=left   ;;
         r ) dir=right  ;;
         u ) dir=left   ;;
@@ -58,9 +54,9 @@ main(){
 
     else
       [[ -z $trgcon ]] && ((__o[gap]+=15)) && {
-        eval "$(listvisible "$type"        \
+        eval "$(listvisible "$arg_type"        \
                             "${__o[gap]}"  \
-                            "$target" | head -1
+                            "$arg_target" | head -1
                )"
       }
 
