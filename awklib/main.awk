@@ -75,9 +75,8 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
     break
 
     case "floating":
-      if ($NF ~ /_on$/) {
-        if(cid==act){actfloat="floating"}
-        ac[cid]["f"]=1
+      if ($NF ~ /_on"$/) {
+        ac[cid]["floating"]=1
       }
     break
 

@@ -57,7 +57,7 @@ END{
       break
     }
 
-    if (actfloat=="") {
+    if (!ac[act]["floating"]) {
 
       for (conid in visiblecontainers) {
 

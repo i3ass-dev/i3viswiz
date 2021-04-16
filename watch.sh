@@ -8,11 +8,11 @@ while read -r ; do
   bashbud --bump "$_dir"
   shellcheck "$_dir/program.sh" && {
     "$_dir/program.sh" -p --json "$(< "$_dir/tests/tree.json")"
-    # time(
-    #   while ((++i<50));do 
-    #     "$_dir/program.sh" -p --json "$(< "$_dir/tests/tree.json")"
-    #   done >/dev/null
-    # )
+    time(
+      while ((++i<50));do 
+        "$_dir/program.sh" -p --json "$(< "$_dir/tests/tree.json")"
+      done >/dev/null
+    )
   }
 done < <(
   inotifywait --event close_write          \

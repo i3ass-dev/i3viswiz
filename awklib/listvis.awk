@@ -20,7 +20,7 @@ function listvis(id,stackh,trg,layout) {
         listvis(trg)
       }
     }
-  } else if (ac[id]["f"]!=1) {
+  } else if (!ac[id]["floating"]) {
     ac[id]["h"]+=ac[id]["b"]
     ac[id]["y"]-=ac[id]["b"]
     visiblecontainers[id]=id
