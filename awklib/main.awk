@@ -1,5 +1,3 @@
-#!/bin/awk
-
 $1 == "\"type\"" {type=$2}
 $1 == "\"nodes\"" && ac[cid]["counter"] == "go"  && $2 != "[]" {
   ac[cid]["counter"]=csid
