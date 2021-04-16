@@ -1,14 +1,13 @@
-$1 == "\"nodes\"" && ac[cid]["counter"] == "go"  && $2 != "[]" {
-  ac[cid]["counter"]=csid
-  csid=cid
-}
-
 $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|focus)"$/ {
   
   key=gensub(/.*"([^"]+)"$/,"\\1","g",$(NF-1))
   switch (key) {
 
     case "id":
+      if ($1 ~ /nodes/ && ac[cid]["counter"] == "go") {
+        ac[cid]["counter"]=csid
+        csid=cid
+      }
       cid=$NF
       allcontainers[++concount]=cid
     break
