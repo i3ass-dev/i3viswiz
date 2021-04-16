@@ -1,10 +1,9 @@
-$1 == "\"type\"" {type=$2}
 $1 == "\"nodes\"" && ac[cid]["counter"] == "go"  && $2 != "[]" {
   ac[cid]["counter"]=csid
   csid=cid
 }
 
-type ~ /con|workspace["]$/ && $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|focus)"$/ {
+$(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|focus)"$/ {
   
   key=gensub(/.*"([^"]+)"$/,"\\1","g",$(NF-1))
   switch (key) {
