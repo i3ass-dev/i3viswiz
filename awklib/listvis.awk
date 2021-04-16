@@ -1,4 +1,4 @@
-function listvis(id,stackh,trg,layout) {
+function listvis(id,stackh,trg) {
 
   # searches container with con_id=id recursevely 
   # for visible containers, add them to the global
