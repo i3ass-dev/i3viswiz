@@ -4,18 +4,16 @@ function listvis(id,stackh,trg,layout) {
   # for visible containers, add them to the global
   # array: visiblecontainers
 
-  layout=gensub(/"/,"","g",ac[id]["layout"])
-
   if ("children" in ac[id]) {
-    if (layout ~ /tabbed|stacked/) {
+    if (ac[id]["layout"] ~ /tabbed|stacked/) {
       trg=ac[id]["focused"]
-      if (layout == "stacked") {
+      if (ac[id]["layout"] ~ /stacked/) {
         stackh=length(ac[id]["children"])
         ac[trg]["h"]+=(ac[trg]["b"]*stackh)
         ac[trg]["y"]-=(ac[trg]["b"]*stackh)
       }
       listvis(trg)
-    } else if (layout ~ /^split/) {
+    } else if (ac[id]["layout"] ~ /split/) {
       for (trg in ac[id]["children"]) {
         listvis(trg)
       }
