@@ -12,9 +12,8 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
     break
 
     case "id":
-      if ($1 ~ /nodes/ && ac[cid]["counter"] == "go") {
-        ac[cid]["counter"]=csid
-        csid=cid
+      if ($1 ~ /"nodes"/) {
+        current_parent_id=cid
       }
       cid=$NF
       allcontainers[++concount]=cid
@@ -30,7 +29,7 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
         }
       }
 
-      if ($1 ~ /"deco_rect"/) {
+      else if ($1 ~ /"deco_rect"/) {
         getline # "x":0
         getline # "y":0
         getline # "width":0
@@ -53,17 +52,15 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
         awsid=cwsid  # active workspace id
         getorder=1   # check order when making children
       }
+
+      ac[cid]["parent"]=current_parent_id
     break
 
     case "window":
-      if ($NF == "null") {
-        ac[cid]["counter"]="go"
-      } 
-      else {
+      if ($NF != "null") {
         ac[cid]["winid"]=$NF
         ac[cid]["i3fyracontainer"]=current_i3fyra
       }
-
     break
 
     case "marks":
@@ -80,23 +77,22 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
 
     case "focus":
       if ($2 != "[]") {
+
+        first_id=gensub(/[^0-9]/,"","g",$2)
+        parent_id=ac[first_id]["parent"]
+        ac[parent_id]["focused"]=first_id
         
         for (gotarray=0; !gotarray; getline) {
 
           child=gensub(/[][]/,"","g",$NF)
- 
-          if ("focused" in ac[csid] == 0) {
-            ac[csid]["focused"]=child
-          }
-
-          ac[csid]["children"][child]=1
+          ac[parent_id]["children"][child]=1
           gotarray=($NF ~ /[]]$/ ? 1 : 0)
 
         }
 
         if (getorder) {
 
-          groupsize=length(ac[csid]["children"])
+          groupsize=length(ac[parent_id]["children"])
           for (i=1;i<groupsize+1;i++) {
             indx=(concount-groupsize)+i
             curry=allcontainers[indx]
@@ -108,11 +104,12 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
           }
           
           lastingroup=curry
-          grouplayout=ac[csid]["layout"]
-          groupid=csid
+          grouplayout=ac[parent_id]["layout"]
+          groupid=parent_id
           getorder=0
         }
-        csid=ac[csid]["counter"]
+
+        current_parent_id=ac[parent_id]["parent"]
       }
     break
   }
