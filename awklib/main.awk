@@ -91,7 +91,6 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
           }
 
           ac[csid]["children"][child]=1
-          # ac[csid]["childs"] = child " " ac[csid]["childs"]
           gotarray=($NF ~ /[]]$/ ? 1 : 0)
 
         }
