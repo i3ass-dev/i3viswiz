@@ -10,7 +10,18 @@ main(){
   types=(title titleformat class instance winid parent)
 
   for arg_type in "${types[@]}"; do
-    ((__o[$arg_type])) && break
+    
+    ((__o[$arg_type])) && {
+
+      if [[ $arg_type = titleformat ]]; then
+        arg_type=title_format
+      elif [[ $arg_type = parent ]]; then
+        arg_type=i3fyracontainer
+      fi
+
+      break
+    }
+
     unset arg_type
   done
 
@@ -28,7 +39,7 @@ main(){
 
   declare -i arg_gap=$((__o[gap] ? __o[gap] : 5))
 
-  [[ $arg_type = titleformat ]] && arg_type=title_format
+  
 
   result="$(listvisible "$arg_type"   \
                         "$arg_gap"    \

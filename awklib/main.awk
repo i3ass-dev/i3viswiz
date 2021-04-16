@@ -61,15 +61,14 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
       } 
       else {
         ac[cid]["winid"]=$NF
-        ac[cid]["parent"]=curpar
+        ac[cid]["i3fyracontainer"]=current_i3fyra
       }
 
     break
 
     case "marks":
-      if (match($2,/"i34(.)"/,ma)) {
-        curpar=ma[1]
-        parents[curpar]=cid
+      if (match($2,/"i34(A|B|C|D)"/,ma)) {
+        current_i3fyra=ma[1]
       }
     break
 

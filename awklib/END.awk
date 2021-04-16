@@ -67,7 +67,7 @@ END{
         cex=cwx+cww    ; cey=cwy+cwh
 
         if (cwx <= trgx && trgx <= cex && cwy <= trgy && trgy <= cey) {
-          tpar=ac[conid]["parent"]
+          tpar=ac[conid]["i3fyracontainer"]
           tcon=conid
           break
         }  
@@ -77,7 +77,7 @@ END{
       tpar="floating"
   }
 
-  else if (arg_type ~ /title|class|parent|instance|title_format|winid/) {
+  else if (arg_type ~ /title|class|i3fyracontainer|instance|title_format|winid/) {
 
     for (conid in visiblecontainers) {
       if (ac[conid][arg_type] ~ arg_target) {print conid ;exit}
@@ -106,7 +106,7 @@ END{
     printf("%s %d ", (conid==act ? "*" : "-" ), conid)
     for (s in geo) { printf("%2s %-6s", geo[s] ":", ac[conid][geo[s]]) }
 
-    print (arg_type ~ /(title_format|class|parent|instance|title|winid)$/ ?
+    print (arg_type ~ /(title_format|class|i3fyracontainer|instance|title|winid)$/ ?
           "| " gensub(/"/,"","g",ac[conid][arg_type]) : "") 
   }
 
