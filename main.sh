@@ -28,6 +28,8 @@ main(){
 
   declare -i arg_gap=$((__o[gap] ? __o[gap] : 5))
 
+  [[ $arg_type = titleformat ]] && arg_type=title_format
+
   result="$(listvisible "$arg_type"   \
                         "$arg_gap"    \
                         "$arg_target" \

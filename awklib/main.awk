@@ -1,7 +1,15 @@
-$(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|focus)"$/ {
+$(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|focus|title_format)"$/ {
   
   key=gensub(/.*"([^"]+)"$/,"\\1","g",$(NF-1))
   switch (key) {
+
+    case "layout":
+    case "title_format":
+    case "title":
+    case "class":
+    case "instance":
+      ac[cid][key]=$NF
+    break
 
     case "id":
       if ($1 ~ /nodes/ && ac[cid]["counter"] == "go") {
@@ -10,10 +18,6 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
       }
       cid=$NF
       allcontainers[++concount]=cid
-    break
-
-    case "layout":
-      clo=$2
     break
 
     case "x":
@@ -53,30 +57,14 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
 
     case "window":
       if ($NF == "null") {
-        ac[cid]["layout"]=clo
         ac[cid]["counter"]="go"
         ac[cid]["focused"]="X"
       } 
-      else
+      else {
         ac[cid]["winid"]=$NF
+        ac[cid]["parent"]=curpar
+      }
 
-    break
-
-    case "title_format":
-      ac[cid]["titleformat"]=$NF
-    break
-
-    case "title":
-      ac[cid]["title"]=$NF
-    break
-
-    case "class":
-      ac[cid]["class"]=$NF
-    break
-
-    case "instance":
-      ac[cid]["instance"]=$NF
-      ac[cid]["parent"]=curpar
     break
 
     case "marks":

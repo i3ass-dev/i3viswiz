@@ -77,7 +77,7 @@ END{
       tpar="floating"
   }
 
-  else if (arg_type ~ /title|class|parent|instance|titleformat|winid/) {
+  else if (arg_type ~ /title|class|parent|instance|title_format|winid/) {
 
     for (conid in visiblecontainers) {
       if (ac[conid][arg_type] ~ arg_target) {print conid ;exit}
@@ -98,13 +98,15 @@ END{
                    groupsize, grouppos, firstingroup,
                    lastingroup, grouplayout, groupid, arg_gap)
 
+
+
   split("x y w h",geo," ")
   for (conid in visiblecontainers) {
 
     printf("%s %d ", (conid==act ? "*" : "-" ), conid)
     for (s in geo) { printf("%2s %-6s", geo[s] ":", ac[conid][geo[s]]) }
 
-    print (arg_type ~ /title|class|parent|instance|titleformat|winid/ ?
+    print (arg_type ~ /(title_format|class|parent|instance|title|winid)$/ ?
           "| " gensub(/"/,"","g",ac[conid][arg_type]) : "") 
   }
 
