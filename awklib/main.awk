@@ -58,7 +58,6 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
     case "window":
       if ($NF == "null") {
         ac[cid]["counter"]="go"
-        ac[cid]["focused"]="X"
       } 
       else {
         ac[cid]["winid"]=$NF
@@ -87,7 +86,7 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
 
           child=gensub(/[][]/,"","g",$NF)
  
-          if(ac[csid]["focused"]=="X") {
+          if ("focused" in ac[csid] == 0) {
             ac[csid]["focused"]=child
           }
 
