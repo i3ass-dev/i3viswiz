@@ -17,6 +17,8 @@ main(){
         arg_type=title_format
       elif [[ $arg_type = parent ]]; then
         arg_type=i3fyracontainer
+      elif [[ $arg_type = title ]]; then
+        arg_type=name
       fi
 
       break

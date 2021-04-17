@@ -80,7 +80,7 @@ END{
     }
   }
 
-  else if (arg_type ~ /title|class|i3fyracontainer|instance|title_format|winid/) {
+  else if (arg_type ~ /name|class|i3fyracontainer|instance|title_format|winid/) {
 
     for (conid in visiblecontainers) {
       if (ac[conid][arg_type] ~ arg_target) {print conid ;exit}
@@ -140,7 +140,7 @@ END{
     printf("%s %d ", (conid==act ? "*" : "-" ), conid)
     for (s in geo) { printf("%2s %-6s", geo[s] ":", ac[conid][geo[s]]) }
 
-    print (arg_type ~ /(title_format|class|i3fyracontainer|instance|title|winid)$/ ?
+    print (arg_type ~ /(title_format|class|i3fyracontainer|instance|name|winid)$/ ?
           "| " gensub(/"/,"","g",ac[conid][arg_type]) : "") 
   }
 

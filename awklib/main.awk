@@ -1,11 +1,11 @@
-$(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|focus|title_format)"$/ {
+$(NF-1) ~ /"(id|window|name|num|x|floating|marks|layout|focused|instance|class|focus|title_format)"$/ {
   
   key=gensub(/.*"([^"]+)"$/,"\\1","g",$(NF-1))
   switch (key) {
 
     case "layout":
     case "title_format":
-    case "title":
+    case "name":
     case "class":
     case "instance":
       ac[cid][key]=$NF
