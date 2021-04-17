@@ -1,18 +1,29 @@
-$(NF-1) ~ /"(id|window|name|num|x|floating|marks|layout|focused|instance|class|focus|title_format)"$/ {
+$(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|instance|class|focus|title_format)"$/ {
   
   key=gensub(/.*"([^"]+)"$/,"\\1","g",$(NF-1))
   switch (key) {
 
     case "layout":
     case "title_format":
-    case "name":
     case "class":
     case "instance":
+    case "output":
+    case "type":
       ac[cid][key]=$NF
     break
 
+    case "name":
+      ac[cid][key]=$NF
+
+      # store dock size on parent container (output)
+      if ($NF ~ /"(top|bottom)dock"/)
+        ac[current_parent_id][gensub(/"/,"","g",$NF)]=ac[cid]["h"]
+
+    break
+
     case "id":
-      if ($1 ~ /"nodes"/) {
+      # nodes regex includes both floating and normal
+      if ($1 ~ /nodes"$/) {
         current_parent_id=cid
       }
       cid=$NF
@@ -50,8 +61,7 @@ $(NF-1) ~ /"(id|window|name|num|x|floating|marks|layout|focused|instance|class|f
         act=cid      # active containre id
         aws=cws      # active workspace number
         awsid=cwsid  # active workspace id
-        if (arg_type != "direction")
-          getorder=1   # check order when making children
+        getorder=1   # check order of active container
       }
 
       ac[cid]["parent"]=current_parent_id
@@ -83,6 +93,11 @@ $(NF-1) ~ /"(id|window|name|num|x|floating|marks|layout|focused|instance|class|f
         parent_id=ac[first_id]["parent"]
         ac[parent_id]["focused"]=first_id
         
+       
+        if (ac[parent_id]["name"] ~ /"content"/ && ac[first_id]["name"] !~ /"__i3_scratch"/) {
+          visible_workspaces[first_id]=1
+        }
+
         for (gotarray=0; !gotarray; getline) {
 
           child=gensub(/[][]/,"","g",$NF)

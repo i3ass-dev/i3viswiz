@@ -3,7 +3,8 @@ END{
   wall="none"
 
   # listvis() creates the visiblecontainers array
-  listvis(awsid)
+  for (wsid in visible_workspaces)
+    listvis(wsid)
 
   # shorthand variables 
   # active workspace (ws) 
@@ -142,6 +143,10 @@ END{
 
     print (arg_type ~ /(title_format|class|i3fyracontainer|instance|name|winid)$/ ?
           "| " gensub(/"/,"","g",ac[conid][arg_type]) : "") 
+  }
+
+  for (conid in visible_workspaces) {
+    print conid,  ac[conid]["type"],  ac[conid]["output"]
   }
 
   # example output:
