@@ -10,7 +10,7 @@ main(){
   types=(title titleformat class instance winid parent)
 
   for arg_type in "${types[@]}"; do
-    
+
     ((__o[$arg_type])) && {
 
       if [[ $arg_type = titleformat ]]; then
@@ -53,26 +53,26 @@ main(){
       exec i3-msg -q "[con_id=$result]" focus
 
   elif [[ $arg_type = direction ]]; then
-    eval "$(head -1 <<< "$result")"
+    eval "$result"
 
-    if [[ ${trgcon:=} = floating ]]; then
+    if [[ ${trgpar:=} = floating ]]; then
 
       case $arg_target in
-        l ) direction=left   ;;
-        r ) direction=right  ;;
-        u ) direction=left   ;;
-        d ) direction=right  ;;
+        l|u ) direction=prev   ;;
+        r|d ) direction=next   ;;
       esac
 
       exec i3-msg -q focus $direction
 
     else
-      [[ -z $trgcon ]] && ((arg_gap+=15)) && {
+      [[ -z ${trgcon:=} ]] && ((arg_gap+=15)) && {
         eval "$(listvisible "$arg_type"   \
                             "$arg_gap"    \
-                            "$arg_target" | head -1
+                            "$arg_target"
                )"
+               ERM "$result"
       }
+      ERM "$trgcon"
 
       [[ $trgcon ]] && exec i3-msg -q "[con_id=$trgcon]" focus
       

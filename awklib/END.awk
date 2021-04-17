@@ -57,8 +57,12 @@ END{
       break
     }
 
-    if (!ac[act]["floating"]) {
+    if (ac[act]["floating"] == 1) {
 
+      print_us["trgpar"]="floating"
+    } 
+    else
+    {
       for (conid in visiblecontainers) {
 
         cwx=ac[conid]["x"] ; cww=ac[conid]["w"]
@@ -67,14 +71,13 @@ END{
         cex=cwx+cww    ; cey=cwy+cwh
 
         if (cwx <= trgx && trgx <= cex && cwy <= trgy && trgy <= cey) {
-          tpar=ac[conid]["i3fyracontainer"]
-          tcon=conid
+          print_us["trgpar"]=ac[conid]["i3fyracontainer"]
+          print_us["trgcon"]=conid
           break
         }  
       }
-    } 
-    else
-      tpar="floating"
+      
+    }
   }
 
   else if (arg_type ~ /title|class|i3fyracontainer|instance|title_format|winid/) {
@@ -88,15 +91,46 @@ END{
   else
     exit
 
-  head1="trgcon=%d trgx=%d trgy=%d wall=%s trgpar=%s "
-  head1=head1 "sx=%d sy=%d sw=%d sh=%d groupsize=%s "
-  head1=head1 "grouppos=%d firstingroup=%d lastingroup=%d "
-  head1=head1 "grouplayout=%s groupid=%d gap=%d"
+  if (arg_type == "direction") {
+    printf("trgcon=%s trgpar=%s", print_us["trgcon"], print_us["trgpar"])
+    exit
+  }
 
-  printf(head1"\n",tcon,trgx,trgy,wall,tpar,
-                   wsx,wsy,wsw,wsh,
-                   groupsize, grouppos, firstingroup,
-                   lastingroup, grouplayout, groupid, arg_gap)
+  pformat="%k=%v "
+
+  # print_us["trgcon"]=act
+  print_us["trgx"]=trgx
+  print_us["trgy"]=trgy
+  print_us["wall"]=wall
+  # print_us["trgpar"]=tpar
+  print_us["sx"]=wsx
+  print_us["sy"]=wsy
+  print_us["sw"]=wsw
+  print_us["sh"]=wsh
+  # print_us["groupsize"]=groupsize
+  # print_us["grouppos"]=grouppos
+  # print_us["firstingroup"]=firstingroup
+  # print_us["lastingroup"]=lastingroup
+  # print_us["grouplayout"]=grouplayout
+  # print_us["groupid"]=groupid
+  print_us["gap"]=arg_gap
+
+  for (k in print_us) {
+    v=gensub(/%k/,k,1,pformat)
+    head1=head1 gensub(/%v/,print_us[k],1,v)
+  }
+
+  print head1
+
+  # head1="trgcon=%d trgx=%d trgy=%d wall=%s trgpar=%s "
+  # head1=head1 "sx=%d sy=%d sw=%d sh=%d groupsize=%s "
+  # head1=head1 "grouppos=%d firstingroup=%d lastingroup=%d "
+  # head1=head1 "grouplayout=%s groupid=%d gap=%d"
+
+  # printf(head1"\n",tcon,trgx,trgy,wall,tpar,
+  #                  wsx,wsy,wsw,wsh,
+  #                  groupsize, grouppos, firstingroup,
+  #                  lastingroup, grouplayout, groupid, arg_gap)
 
 
 

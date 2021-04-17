@@ -16,7 +16,7 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
         current_parent_id=cid
       }
       cid=$NF
-      allcontainers[++concount]=cid
+      container_order[++container_count]=cid
     break
 
     case "x":
@@ -50,7 +50,8 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
         act=cid      # active containre id
         aws=cws      # active workspace number
         awsid=cwsid  # active workspace id
-        getorder=1   # check order when making children
+        if (arg_type != "direction")
+          getorder=1   # check order when making children
       }
 
       ac[cid]["parent"]=current_parent_id
@@ -94,18 +95,18 @@ $(NF-1) ~ /"(id|window|title|num|x|floating|marks|layout|focused|instance|class|
 
           groupsize=length(ac[parent_id]["children"])
           for (i=1;i<groupsize+1;i++) {
-            indx=(concount-groupsize)+i
-            curry=allcontainers[indx]
+            indx=(container_count-groupsize)+i
+            curry=container_order[indx]
 
             if (i==1)
-              firstingroup=curry
+              print_us["firstingroup"]=curry
             if (curry == act)
-              grouppos=i
+              print_us["grouppos"]=i
           }
           
-          lastingroup=curry
-          grouplayout=ac[parent_id]["layout"]
-          groupid=parent_id
+          print_us["lastingroup"]=curry
+          print_us["grouplayout"]=ac[parent_id]["layout"]
+          print_us["groupid"]=parent_id
           getorder=0
         }
 
