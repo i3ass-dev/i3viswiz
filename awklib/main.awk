@@ -1,6 +1,7 @@
 $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|instance|class|focus|title_format)"$/ {
   
   key=gensub(/.*"([^"]+)"$/,"\\1","g",$(NF-1))
+    
   switch (key) {
 
     case "layout":
@@ -15,17 +16,24 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
     case "name":
       ac[cid][key]=$NF
 
-      # store dock size on parent container (output)
-      if ($NF ~ /"(top|bottom)dock"/)
-        ac[current_parent_id][gensub(/"/,"","g",$NF)]=ac[cid]["h"]
+      # store output container id in separate array
+      if ( ac[cid]["type"] ~ /"output"/ &&
+           $NF !~ /__i3/)
+        outputs[$NF]=cid
 
     break
 
     case "id":
-      # nodes regex includes both floating and normal
+      # when "nodes": (or "floating_nodes":) and "id":
+      # is on the same record.
+      #   example -> "nodes":[{"id":94446734049888 
+      # it is the start of a branch in the tree.
+      # save the last container_id as current_parent_id
       if ($1 ~ /nodes"$/) {
         current_parent_id=cid
       }
+
+      # cid, "current id" is the last seen container_id
       cid=$NF
       container_order[++container_count]=cid
     break
@@ -33,10 +41,15 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
     case "x":
 
       if ($1 ~ /"rect"/) {
-        for (gotarray=0; !gotarray; getline) {
+        # this will add values to ac[cid]["x"], ac[cid]["y"] ...
+        while (1) {
           match($0,/"([^"])[^"]*":([0-9]+)([}])?$/,ma)
           ac[cid][ma[1]]=ma[2]
-          gotarray=(ma[3] == "}" ? 1 : 0)
+          if (ma[3] == "}")
+            break
+          # break before getline, otherwise we will
+          # miss the "deco_rect" line..
+          getline
         }
       }
 
@@ -45,38 +58,37 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
         getline # "y":0
         getline # "width":0
                 # "height":0}
-        titlebarheight=gensub(/[^0-9]/,"","g",$2)
-        ac[cid]["b"]=titlebarheight
+        ac[cid]["titlebarheight"]=gensub(/[}]/,"","g",$2)
       } 
       
     break
 
     case "num":
-      cws=$2    # current workspace number
+      ac[cid][key]=$NF
       cwsid=cid # current workspace id
+      copid=outputs[ac[cid]["output"]] # current output id
     break
 
     case "focused":
       if ($NF == "true") {
-        act=cid      # active containre id
-        aws=cws      # active workspace number
-        awsid=cwsid  # active workspace id
-        getorder=1   # check order of active container
+        active_container_id=cid
+        active_workspace_id=cwsid
+        active_output_id=copid
+        getorder=1
       }
-
       ac[cid]["parent"]=current_parent_id
     break
 
     case "window":
       if ($NF != "null") {
         ac[cid]["winid"]=$NF
-        ac[cid]["i3fyracontainer"]=current_i3fyra
+        ac[cid]["i3fyracontainer"]=current_i3fyra_container
       }
     break
 
     case "marks":
       if (match($2,/"i34(A|B|C|D)"/,ma)) {
-        current_i3fyra=ma[1]
+        current_i3fyra_container=ma[1]
       }
     break
 
@@ -88,24 +100,41 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
 
     case "focus":
       if ($2 != "[]") {
-
+        # a not empty focus list is the first thing
+        # we encounter after a branch. The first
+        # item of the list is the focused container
+        # which is of interest if the container is
+        # tabbed or stacked, where only the focused container
+        # is visible.
         first_id=gensub(/[^0-9]/,"","g",$2)
         parent_id=ac[first_id]["parent"]
         ac[parent_id]["focused"]=first_id
+
+        # this restores current_parent_id to what
+        # it was before branching.
+        current_parent_id=ac[parent_id]["parent"]
         
-       
-        if (ac[parent_id]["name"] ~ /"content"/ && ac[first_id]["name"] !~ /"__i3_scratch"/) {
+        # workspaces are childs in a special containers
+        # named "content", so the focused (first_id) container
+        # is a visible workspace (excluding the scratchpad)
+        if (ac[parent_id]["name"] ~ /"content"/ &&
+            ac[first_id]["name"] !~ /"__i3_scratch"/) {
           visible_workspaces[first_id]=1
+
+          # store the workspace number for current output
+          ac[copid]["num"]=ac[first_id]["num"]
         }
 
+        # this just store a list of child container IDs
+        # (same as the focus list).
         for (gotarray=0; !gotarray; getline) {
-
           child=gensub(/[][]/,"","g",$NF)
           ac[parent_id]["children"][child]=1
           gotarray=($NF ~ /[]]$/ ? 1 : 0)
-
         }
 
+        # if the active container is one of the children
+        # get the order and size of the containers.
         if (getorder) {
 
           groupsize=length(ac[parent_id]["children"])
@@ -115,7 +144,7 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
 
             if (i==1)
               print_us["firstingroup"]=curry
-            if (curry == act)
+            if (curry == active_container_id)
               print_us["grouppos"]=i
           }
           
@@ -124,8 +153,6 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
           print_us["groupid"]=parent_id
           getorder=0
         }
-
-        current_parent_id=ac[parent_id]["parent"]
       }
     break
   }

@@ -1,86 +1,60 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 main(){
 
-  local arg_target arg_type
-  
-  declare -g _json
-
   arg_target=${__lastarg:-X}
-  types=(title titleformat class instance winid parent)
 
-  for arg_type in "${types[@]}"; do
+    if ((__o[title]));       then arg_type=name
+  elif ((__o[titleformat])); then arg_type=title_format
+  elif ((__o[parent]));      then arg_type=i3fyracontainer
+  elif ((__o[instance]));    then arg_type=instance
+  elif ((__o[class]));       then arg_type=class
+  elif ((__o[winid]));       then arg_type=winid
 
-    ((__o[$arg_type])) && {
+  elif [[ $arg_target = X ]]; then
+    arg_type=instance
+  else
+    arg_type="direction"
 
-      if [[ $arg_type = titleformat ]]; then
-        arg_type=title_format
-      elif [[ $arg_type = parent ]]; then
-        arg_type=i3fyracontainer
-      elif [[ $arg_type = title ]]; then
-        arg_type=name
-      fi
-
-      break
-    }
-
-    unset arg_type
-  done
-
-  if [[ -z $arg_type && $arg_target = X ]]; then
-    ERH "no command or option specified"
-  elif [[ -z $arg_type ]]; then
     arg_target="${arg_target,,}"
     arg_target="${arg_target:0:1}"
 
     [[ $arg_target =~ l|r|u|d ]] \
       || ERH "$__lastarg not valid direction (l|r|u|d)"
-
-    arg_type="direction"
   fi
 
-  declare -i arg_gap=$((__o[gap] ? __o[gap] : 5))
+  : "${__o[json]:=$(i3-msg -t get_tree)}"
+  : "${__o[debug]:=LIST}"
+  : "${__o[debug-format]:=%k=%v }"
+  arg_gap=$((__o[gap] > 0 ? __o[gap] : 5))
 
+  result=$(
+    # <<<    - content of string __o[json] will be input  to command awk
+    # -f <() - output of awklib will be interpreted as file containg AWK script
+    # FS     - change Field  Separator to ":" (from whitespace)
+    # RS     - change Record Separator to "," (from linebreak)
+    # arg_   - these variables is available in the AWK script
+    <<< "${__o[json]}" awk -f <(awklib) FS=: RS=, \
+    arg_type="$arg_type" arg_gap="$arg_gap" arg_target="$arg_target" \
+    arg_debug="${__o[debug]}" arg_debug_format="${__o[debug-format]}"
+  )
   
+  if [[ $result = floating ]]; then
 
-  result="$(listvisible "$arg_type"   \
-                        "$arg_gap"    \
-                        "$arg_target" \
-           )"
+    case "$arg_target" in
+      l|u ) direction=prev   ;;
+      r|d ) direction=next   ;;
+      *   ) ERX "$arg_target not valid direction (l|r|u|d)" ;;
+    esac
 
-  if ((__o[focus])); then
-    [[ $result =~ ^[0-9]+$ ]] \
-      || ERX "focus failed. $result is not a valid containerID"
+    exec i3-msg -q focus $direction
 
-      exec i3-msg -q "[con_id=$result]" focus
-
-  elif [[ $arg_type = direction ]]; then
-    eval "$result"
-
-    if [[ ${trgpar:=} = floating ]]; then
-
-      case $arg_target in
-        l|u ) direction=prev   ;;
-        r|d ) direction=next   ;;
-      esac
-
-      exec i3-msg -q focus $direction
-
-    else
-      [[ -z ${trgcon:=} ]] && ((arg_gap+=15)) && {
-        eval "$(listvisible "$arg_type"   \
-                            "$arg_gap"    \
-                            "$arg_target"
-               )"
-               ERM "$result"
-      }
-      ERM "$trgcon"
-
-      [[ $trgcon ]] && exec i3-msg -q "[con_id=$trgcon]" focus
-      
-    fi
-  else
+  elif [[ $arg_type != direction && ! ${__o[focus]} ]]; then
     echo "$result"
+  elif [[ $result =~ ^[0-9]+$ ]]; then
+    exec i3-msg -q "[con_id=$result]" focus
+  else
+    ERX "focus failed. '$result' doesn't make any sense"
   fi
 }
 
