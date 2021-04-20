@@ -151,6 +151,7 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
           print_us["lastingroup"]=curry
           print_us["grouplayout"]=ac[parent_id]["layout"]
           print_us["groupid"]=parent_id
+          print_us["groupsize"]=groupsize
           getorder=0
         }
       }
