@@ -12,8 +12,8 @@ function listvis(id,
         ac[trg]["h"]+=(ac[trg]["titlebarheight"]*stackh)
         ac[trg]["y"]-=(ac[trg]["titlebarheight"]*stackh)
       }
-      # listvis(trg)
-      visible_containers[trg]=trg
+      listvis(trg)
+      # visible_containers[trg]=trg
     } else if (ac[id]["layout"] ~ /split/) {
       for (trg in ac[id]["children"]) {
         listvis(trg)

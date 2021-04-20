@@ -65,7 +65,8 @@ END{
     for (k in debug_vars) {
       if (debug_vars[k] in print_us) {
         v=gensub(/%k/,debug_vars[k],1,arg_debug_format)
-        debug_out=debug_out gensub(/%v/,print_us[debug_vars[k]],1,v)
+        var=gensub(/^"|"$/,"","g",print_us[debug_vars[k]])
+        debug_out=debug_out gensub(/%v/,var,1,v)
       }
     }
 
