@@ -9,13 +9,13 @@ created:       2018-01-18
 dependencies:  [bash, gawk, i3]
 see-also:      [bash(1), awk(1), i3(1)]
 synopsis: |
-    [--gap|-g GAPSIZE] DIRECTION  [--json JSON] [--debug VARLIST] [--debug-format FORMAT]
-    --title|-t       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT]
-    --instance|-i    [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT]
-    --class|-c       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT]
-    --titleformat|-o [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT]
-    --winid|-d       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT]
-    --parent|-p      [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT]
+    [--gap|-g GAPSIZE] DIRECTION  [--json JSON] [--debug VARLIST] [--debug-format FORMAT] [--verbose]
+    --title|-t       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT] [--verbose] 
+    --instance|-i    [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT] [--verbose]
+    --class|-c       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT] [--verbose]
+    --titleformat|-o [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT] [--verbose]
+    --winid|-d       [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT] [--verbose]
+    --parent|-p      [--gap|-g GAPSIZE] [DIRECTION|TARGET] [--focus|-f] [--json JSON] [--debug VARLIST] [--debug-format FORMAT] [--verbose]
     --help|-h
     --version|-v
 ...

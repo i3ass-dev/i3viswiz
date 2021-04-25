@@ -2,6 +2,16 @@
 
 main(){
 
+  __o[verbose]=1
+
+  ((__o[verbose])) && {
+    declare -gi _stamp
+    _stamp=$(date +%s%N)
+    ERM $'\n'"---i3viswiz start---"
+  }
+
+  trap 'cleanup' EXIT
+
   arg_target=${__lastarg:-X}
 
     if ((__o[title]));       then arg_type=name
@@ -39,7 +49,7 @@ main(){
     arg_debug="${__o[debug]}" arg_debug_format="${__o[debug-format]}"
   )
   
-  if [[ $result = floating ]]; then
+  if [[ $result =~ ^floating ]]; then
 
     case "$arg_target" in
       l|u ) direction=prev   ;;
@@ -47,12 +57,33 @@ main(){
       *   ) ERX "$arg_target not valid direction (l|r|u|d)" ;;
     esac
 
-    exec i3-msg -q focus $direction
+    messy i3-msg -q focus $direction
 
   elif [[ $arg_type != direction && ! ${__o[focus]} ]]; then
     echo "$result"
-  elif [[ $result =~ ^[0-9]+$ ]]; then
-    exec i3-msg -q "[con_id=$result]" focus
+  elif [[ $result =~ ^[0-9]+ ]]; then
+
+    read -r target_id active_id root_id marked_id <<< "$result"
+
+    [[ $arg_type = direction ]] && {
+
+      # i3var set viswiz-last-direction "$active_id"
+      # we take manually update i3vars for performance reasons
+      
+      variable_name=i3viswiz-last-direction
+      new_mark="${variable_name}=$active_id"
+
+      # this will remove the old mark
+      [[ $marked_id ]] && {
+        old_mark="${variable_name}=$marked_id"
+        messy "[con_mark=$old_mark] mark --toggle --add $old_mark"
+      }
+
+      messy "[con_id=$root_id] mark --add $new_mark"
+
+    }
+
+    messy "[con_id=$target_id]" focus
   else
     ERX "focus failed. '$result' doesn't make any sense"
   fi

@@ -13,6 +13,8 @@ END{
       print_us["trgcon"]=active_container_id
       print_us["trgpar"]="floating"
     } else {
+
+
       target_container=find_window(arg_target)
 
       # if we cannot find a window in the given direction
@@ -27,7 +29,7 @@ END{
     }
 
     if (arg_type == "direction") {
-      print target_container
+      print target_container, active_container_id, root_id, last_direction_id
       exit
     }
   }

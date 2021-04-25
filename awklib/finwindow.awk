@@ -30,16 +30,18 @@ function find_window(direction,
   found=0
   wall="none"
 
-
   if ( (direction == "r" && trgx > wsx+wsw) ||
        (direction == "l" && trgx < wsx) ) {
 
     wall=(direction == "l" ? "left" : "right")
 
-    if ( (direction == "r" && trgx > rootx+rootw) ||
-         (direction == "l" && trgx < rootx) ) {
+    # invert direction
+    direction=(direction == "l" ? "r" : "l")
 
-      trgx=(direction == "l" ? rootx+rootw-arg_gap :
+    if ( (direction == "l" && trgx > rootx+rootw) ||
+         (direction == "r" && trgx < rootx) ) {
+
+      trgx=(direction == "r" ? rootx+rootw-arg_gap :
                                rootx+arg_gap)
 
       wall=wall "-area"
@@ -64,6 +66,8 @@ function find_window(direction,
         break
       }
     }
+
+    trgx=(found == 1 ? trgx : (direction == "r" ? wsx : wsx+wsw))
   }
 
   else if ( (direction == "u" && trgy < wsy) ||
@@ -71,10 +75,13 @@ function find_window(direction,
 
     wall=(direction == "u" ? "up" : "down")
 
-    if ( (direction == "u" && trgy < rooty) ||
-         (direction == "d" && trgy > rooty+rooth) ) {
+    # invert direction
+    direction=(direction == "u" ? "d" : "u")
 
-      trgy=(direction == "u" ? rooty+rooth-arg_gap :
+    if ( (direction == "d" && trgy < rooty) ||
+         (direction == "u" && trgy > rooty+rooth) ) {
+
+      trgy=(direction == "d" ? rooty+rooth-arg_gap :
                                rooty+arg_gap )
 
       wall=wall "-area"
@@ -82,7 +89,7 @@ function find_window(direction,
       wall=wall "-workspace"
       # make sure trgy is outside active output
       # and not just the workspace (top|bottombars)
-      trgy=(direction == "u" ? opy-arg_gap : opy+oph+arg_gap)
+      trgy=(direction == "d" ? opy-arg_gap : opy+oph+arg_gap)
     }
 
     for (workspace_id in visible_workspaces) {
@@ -97,7 +104,7 @@ function find_window(direction,
             is_container_at_pos(active_output_id,tmpx, opy)) {
         # set the target y according to the workspace
         # incase the output has a bottombar
-        trgy=(direction == "u" ? 
+        trgy=(direction == "d" ? 
                 ac[workspace_id]["y"]+ac[workspace_id]["h"]-arg_gap :
                 ac[workspace_id]["y"]+arg_gap )
         
@@ -110,13 +117,68 @@ function find_window(direction,
         break
       }
     }
-    
+
+    # in case no monitors exist in direction, but
+    # workarea continues, we do this to warp on current
+    # workspace
+
+    # AWB below represents vertical monitor (B)
+    # to the right of horizontal monitor (A)
+    # W is "empty workarea", so when focusing up
+    # on workspace on A, we would get stuck otherwise.
+
+    # WWWBB
+    # AAABB
+    # AAABB
+
+    trgy=(found == 1 ? trgy : (direction == "d" ? wsy : wsy+wsh))
+
   }
 
   print_us["wall"]=wall
   print_us["trgx"]=trgx ; print_us["trgy"]=trgy
   print_us["sx"]=wsx ; print_us["sy"]=wsy
   print_us["sw"]=wsw ; print_us["sh"]=wsh
+
+  if ( last_direction_id in visible_containers ) {
+
+    # last_direction is set by i3var (a mark)
+    # so if it is visible we prioritize focusing that
+    # if it is adjacent in target direction
+
+    lwx=ac[last_direction_id]["x"]; lwy=ac[last_direction_id]["y"]
+    lww=ac[last_direction_id]["w"]; lwh=ac[last_direction_id]["h"]
+
+    switch (direction) {
+      case "d":
+      case "u":
+
+        if ( (direction == "d" && lwy < awy+awh) ||
+             (direction == "u" && lwy+lwh > awy) )
+          break
+
+        if ( is_container_at_pos(last_direction_id, lwx, trgy) &&
+           ( is_container_at_pos(active_container_id, lwx, awy) ||
+             is_container_at_pos(active_container_id, lwx+lww, awy) ) ) {
+          return last_direction_id
+        }
+      break
+
+      case "r":
+      case "l":
+
+        if ( (direction == "r" && lwx < awx+aww) ||
+             (direction == "l" && lwx+lww > awx) )
+          break
+
+        if ( is_container_at_pos(last_direction_id, trgx, lwy) &&
+           ( is_container_at_pos(active_container_id, awx, lwy) ||
+             is_container_at_pos(active_container_id, awx, lwy+lwh) ) ) {
+          return last_direction_id
+        }
+      break
+    }
+  }
 
   for (conid in visible_containers) {
     if (is_container_at_pos(conid, trgx, trgy))

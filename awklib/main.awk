@@ -31,6 +31,8 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
       # save the last container_id as current_parent_id
       if ($1 ~ /nodes"$/) {
         current_parent_id=cid
+      } else if (NR == 1) {
+        root_id=$NF
       }
 
       # cid, "current id" is the last seen container_id
@@ -89,6 +91,25 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
     case "marks":
       if (match($2,/"i34(A|B|C|D)"/,ma)) {
         current_i3fyra_container=ma[1]
+      }
+
+      # marks set by i3var all are at the root_id.
+      # all that are related to i3viswiz has i3viswiz prefix
+      
+      # "marks":["i34MAC=157"
+      # "i34FBD=X"
+      # "hidden93845635698816="]
+      else if (cid == root_id) {
+        while (1) {
+          match($0,/"(i3viswiz)?([^"=]+)=([^"]*)"([]])?$/,ma)
+
+          if (ma[1] == "i3viswiz")
+            last_direction_id=ma[3]
+          if (ma[4] ~ "]")
+            break
+
+          getline
+        }
       }
     break
 
