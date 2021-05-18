@@ -47,27 +47,6 @@ function find_window(direction,
       wall=wall "-area"
     } else
       wall=wall "-workspace"
-
-    for (workspace_id in visible_workspaces) {
-      # on each workspace try a temporary target y
-      # at the middle of the workspace
-      tmpy=ac[workspace_id]["y"]+(ac[workspace_id]["h"]/2)-arg_gap
-      # test if this temp y position exist both on
-      # the current and active workspace (they are aligned)
-      # and that trgx exist on current workspace (its aligned to the left)
-      if (  is_container_at_pos(workspace_id, trgx, tmpy) && 
-            is_container_at_pos(active_output_id, opx, tmpy)) {
-        # if trgy is not on the next output
-        # set it at the middle (tmpy)
-        if (!is_container_at_pos(workspace_id, trgx, trgy))
-          trgy=tmpy
-
-        found=1
-        break
-      }
-    }
-
-    trgx=(found == 1 ? trgx : (direction == "r" ? wsx : wsx+wsw))
   }
 
   else if ( (direction == "u" && trgy < wsy) ||
@@ -85,60 +64,9 @@ function find_window(direction,
                                rooty+arg_gap )
 
       wall=wall "-area"
-    } else {
+    } else 
       wall=wall "-workspace"
-      # make sure trgy is outside active output
-      # and not just the workspace (top|bottombars)
-      trgy=(direction == "d" ? opy-arg_gap : opy+oph+arg_gap)
-    }
-
-    for (workspace_id in visible_workspaces) {
-      output_id=outputs[ac[workspace_id]["output"]]
-      # on each workspace try a temporary target x
-      # at the middle of the output
-      tmpx=ac[output_id]["x"]+(ac[output_id]["w"]/2)+arg_gap
-
-      # test if this temp x position also exist on active output
-      # test if both the x and y position exist on current output
-      if (  is_container_at_pos(output_id, tmpx, trgy) && 
-            is_container_at_pos(active_output_id,tmpx, opy)) {
-        # set the target y according to the workspace
-        # incase the output has a bottombar
-        trgy=(direction == "d" ? 
-                ac[workspace_id]["y"]+ac[workspace_id]["h"]-arg_gap :
-                ac[workspace_id]["y"]+arg_gap )
-        
-        # if trgx is not on the next workspace
-        # set it at the middle (tmpy)
-        if (!is_container_at_pos(workspace_id, trgx, trgy))
-          trgx=tmpx
-
-        found=1
-        break
-      }
-    }
-
-    # in case no monitors exist in direction, but
-    # workarea continues, we do this to warp on current
-    # workspace
-
-    # AWB below represents vertical monitor (B)
-    # to the right of horizontal monitor (A)
-    # W is "empty workarea", so when focusing up
-    # on workspace on A, we would get stuck otherwise.
-
-    # WWWBB
-    # AAABB
-    # AAABB
-
-    trgy=(found == 1 ? trgy : (direction == "d" ? wsy : wsy+wsh))
-
   }
-
-  print_us["wall"]=wall
-  print_us["trgx"]=trgx ; print_us["trgy"]=trgy
-  print_us["sx"]=wsx ; print_us["sy"]=wsy
-  print_us["sw"]=wsw ; print_us["sh"]=wsh
 
   if ( last_direction_id in visible_containers ) {
 
@@ -160,7 +88,7 @@ function find_window(direction,
         if ( is_container_at_pos(last_direction_id, lwx, trgy) &&
            ( is_container_at_pos(active_container_id, lwx, awy) ||
              is_container_at_pos(active_container_id, lwx+lww, awy) ) ) {
-          return last_direction_id
+          found=last_direction_id
         }
       break
 
@@ -174,16 +102,81 @@ function find_window(direction,
         if ( is_container_at_pos(last_direction_id, trgx, lwy) &&
            ( is_container_at_pos(active_container_id, awx, lwy) ||
              is_container_at_pos(active_container_id, awx, lwy+lwh) ) ) {
-          return last_direction_id
+          found=last_direction_id
         }
       break
     }
   }
 
+  if (found == 0 && wall != "none") {
+    if (direction ~ /l|r/) {
+      for (workspace_id in visible_workspaces) {
+        # on each workspace try a temporary target y
+        # at the middle of the workspace
+        tmpy=ac[workspace_id]["y"]+(ac[workspace_id]["h"]/2)-arg_gap
+        # test if this temp y position exist both on
+        # the current and active workspace (they are aligned)
+        # and that trgx exist on current workspace (its aligned to the left)
+        if (  is_container_at_pos(workspace_id, trgx, tmpy) && 
+              is_container_at_pos(active_output_id, opx, tmpy)) {
+          # if trgy is not on the next output
+          # set it at the middle (tmpy)
+          if (!is_container_at_pos(workspace_id, trgx, trgy))
+            trgy=tmpy
+
+          found=1
+          break
+        }
+      }
+      trgx=(found == 1 ? trgx : (direction == "l" ? wsx : wsx+wsw))
+    }
+
+    else if (direction ~ /u|d/) {
+
+      # make sure trgy is outside active output
+      # and not just the workspace (top|bottombars)
+      if (wall ~ /workspace/)
+        trgy=(direction == "d" ? opy-arg_gap : opy+oph+arg_gap)
+
+      for (workspace_id in visible_workspaces) {
+        output_id=outputs[ac[workspace_id]["output"]]
+        # on each workspace try a temporary target x
+        # at the middle of the output
+        tmpx=ac[output_id]["x"]+(ac[output_id]["w"]/2)+arg_gap
+
+        # test if this temp x position also exist on active output
+        # test if both the x and y position exist on current output
+        if (  is_container_at_pos(output_id, tmpx, trgy) && 
+              is_container_at_pos(active_output_id,tmpx, opy)) {
+          # set the target y according to the workspace
+          # incase the output has a bottombar
+          trgy=(direction == "d" ? 
+                  ac[workspace_id]["y"]+ac[workspace_id]["h"]-arg_gap :
+                  ac[workspace_id]["y"]+arg_gap )
+          
+          # if trgx is not on the next workspace
+          # set it at the middle (tmpx)
+          if (!is_container_at_pos(workspace_id, trgx, trgy))
+            trgx=tmpx
+
+          found=1
+          break
+        }
+      }
+      trgy=(found == 1 ? trgy : (direction == "d" ? wsy : wsy+wsh))
+    }
+  }
+
+  print_us["wall"]=wall
+  print_us["trgx"]=trgx ; print_us["trgy"]=trgy
+  print_us["sx"]=wsx ; print_us["sy"]=wsy
+  print_us["sw"]=wsw ; print_us["sh"]=wsh
+
+  if (found > 1)
+    return found
+
   for (conid in visible_containers) {
     if (is_container_at_pos(conid, trgx, trgy))
       return conid
   }
-
-  return ""
 }
