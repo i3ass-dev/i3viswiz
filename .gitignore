@@ -5,4 +5,4 @@ program.sh
 init.sh
 manpage.md
 README.md
-i3viswiz.1
+*.1
