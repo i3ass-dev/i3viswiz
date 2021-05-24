@@ -54,6 +54,10 @@ function find_window(direction,
 
     wall=(direction == "u" ? "up" : "down")
 
+    trgy=(direction == "d" ? opy+oph+arg_gap :
+          direction == "u" ? opy-arg_gap     :
+          awy+(awh/2)-arg_gap )
+
     # invert direction
     direction=(direction == "u" ? "d" : "u")
 

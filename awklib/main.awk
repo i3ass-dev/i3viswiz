@@ -76,7 +76,6 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
         active_container_id=cid
         active_workspace_id=cwsid
         active_output_id=copid
-        getorder=1
       }
       ac[cid]["parent"]=current_parent_id
     break
@@ -133,6 +132,7 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
 
         # this restores current_parent_id to what
         # it was before branching.
+        cid=parent_id
         current_parent_id=ac[parent_id]["parent"]
         
         # workspaces are childs in a special containers
@@ -154,19 +154,23 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
           gotarray=($NF ~ /[]]$/ ? 1 : 0)
         }
 
-        # if the active container is one of the children
-        # get the order and size of the containers.
-        if (getorder) {
+        # if the ACTIVE container is one of the children
+        # get the order 
+        if (active_container_id in ac[parent_id]["children"]) {
 
           groupsize=length(ac[parent_id]["children"])
-          for (i=1;i<groupsize+1;i++) {
-            indx=(container_count-groupsize)+i
-            curry=container_order[indx]
 
-            if (i==1)
-              print_us["firstingroup"]=curry
-            if (curry == active_container_id)
-              print_us["grouppos"]=i
+          i=0 ; indx=0
+          while (i<groupsize) {
+            if (container_order[++indx] in ac[parent_id]["children"]) {
+              curry=container_order[indx]
+
+              if (++i==1)
+                print_us["firstingroup"]=curry
+              if (curry == active_container_id)
+                print_us["grouppos"]=i
+
+            }
           }
           
           print_us["lastingroup"]=curry
