@@ -1,75 +1,91 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 main(){
 
-  local target type dir
+  # __o[verbose]=1
 
-  declare -g _json
+  ((__o[verbose])) && {
+    declare -gi _stamp
+    _stamp=$(date +%s%N)
+    ERM $'\n'"---i3viswiz start---"
+  }
 
-  target=${__lastarg:-X}
+  trap 'cleanup' EXIT
 
-  if [[ -n ${__o[title]} ]]; then
-    type=title
-  elif [[ -n ${__o[titleformat]} ]]; then
-    type=titleformat
-  elif [[ -n ${__o[instance]} ]]; then
-    type=instance
-  elif [[ -n ${__o[class]} ]]; then
-    type=class
-  elif [[ -n ${__o[winid]} ]]; then
-    type=winid
-  elif [[ -n ${__o[parent]} ]]; then
-    type=parent
+  arg_target=${__lastarg:-X}
+
+    if ((__o[title]));       then arg_type=name
+  elif ((__o[titleformat])); then arg_type=title_format
+  elif ((__o[parent]));      then arg_type=i3fyracontainer
+  elif ((__o[instance]));    then arg_type=instance
+  elif ((__o[class]));       then arg_type=class
+  elif ((__o[winid]));       then arg_type=winid
+
+  elif [[ $arg_target = X ]]; then
+    arg_type=instance
   else
-    type="direction"
-    target="${target,,}"
-    target="${target:0:1}"
+    arg_type="direction"
 
-    [[ $target =~ l|r|u|d ]] \
-      || ERH "$__lastarg not valid command"
+    arg_target="${arg_target,,}"
+    arg_target="${arg_target:0:1}"
 
+    [[ $arg_target =~ l|r|u|d ]] \
+      || ERH "$__lastarg not valid direction (l|r|u|d)"
   fi
 
-  : "${__o[gap]:=5}"
+  : "${__o[json]:=$(i3-msg -t get_tree)}"
+  : "${__o[debug]:=LIST}"
+  : "${__o[debug-format]:=%k=%v }"
+  arg_gap=$((__o[gap] > 0 ? __o[gap] : 5))
 
-  result="$(listvisible "$type"        \
-                        "${__o[gap]}"  \
-                        "$target"      \
-           )"
+  result=$(
+    # <<<    - content of string __o[json] will be input  to command awk
+    # -f <() - output of awklib will be interpreted as file containg AWK script
+    # FS     - change Field  Separator to ":" (from whitespace)
+    # RS     - change Record Separator to "," (from linebreak)
+    # arg_   - these variables is available in the AWK script
+    <<< "${__o[json]}" awk -f <(awklib) FS=: RS=, \
+    arg_type="$arg_type" arg_gap="$arg_gap" arg_target="$arg_target" \
+    arg_debug="${__o[debug]}" arg_debug_format="${__o[debug-format]}"
+  )
+  
+  if [[ $result =~ ^floating ]]; then
 
-  if ((__o[focus])); then
-    [[ $result =~ ^[0-9]+$ ]] \
-      && exec i3-msg -q "[con_id=$result]" focus
-    exit 1
+    case "$arg_target" in
+      l|u ) direction=prev   ;;
+      r|d ) direction=next   ;;
+      *   ) ERX "$arg_target not valid direction (l|r|u|d)" ;;
+    esac
 
-  elif [[ $type = direction ]]; then
-    eval "$(head -1 <<< "$result")"
+    messy i3-msg -q focus $direction
 
-    if [[ ${trgcon:=} = floating ]]; then
+  elif [[ $arg_type != direction && ! ${__o[focus]} ]]; then
+    echo "$result"
+  elif [[ $result =~ ^[0-9]+ ]]; then
 
-      case $target in
-        l ) dir=left   ;;
-        r ) dir=right  ;;
-        u ) dir=left   ;;
-        d ) dir=right  ;;
-      esac
+    read -r target_id active_id root_id marked_id <<< "$result"
 
-      i3-msg -q focus $dir
+    [[ $arg_type = direction ]] && {
 
-    else
-      [[ -z $trgcon ]] && ((__o[gap]+=15)) && {
-        eval "$(listvisible "$type"        \
-                            "${__o[gap]}"  \
-                            "$target" | head -1
-               )"
+      # i3var set viswiz-last-direction "$active_id"
+      # we take manually update i3vars for performance reasons
+      
+      variable_name=i3viswiz-last-direction
+      new_mark="${variable_name}=$active_id"
+
+      # this will remove the old mark
+      [[ $marked_id ]] && {
+        old_mark="${variable_name}=$marked_id"
+        messy "[con_mark=$old_mark] mark --toggle --add $old_mark"
       }
 
-      [[ -n $trgcon ]] \
-        && i3-msg -q "[con_id=$trgcon]" focus
+      messy "[con_id=$root_id] mark --add $new_mark"
 
-    fi
+    }
+
+    messy "[con_id=$target_id]" focus
   else
-    echo "$result"
+    ERX "focus failed. '$result' doesn't make any sense"
   fi
 }
 

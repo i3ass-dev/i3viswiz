@@ -1,111 +1,94 @@
 END{
 
-  wall="none"
+  for (wsid in visible_workspaces)
+    listvis(wsid)
 
-  # listvis() creates the visiblecontainers array
-  listvis(awsid)
+  # commandline example:
+  #   i3viswiz down  (arg_target=d arg_type=direction)
+  #   i3viswiz -i d  (arg_target=d arg_type=instance)
+  if (arg_target ~ /^(l|r|u|d)$/) {
 
-  # shorthand variables 
-  # active workspace (ws) 
-  wsx=int(ac[awsid]["x"]); wsy=int(ac[awsid]["y"])
-  wsw=int(ac[awsid]["w"]); wsh=int(ac[awsid]["h"])
-  # active window (aw)
-  awx=int(ac[act]["x"]);   awy=int(ac[act]["y"])
-  aww=int(ac[act]["w"]);   awh=int(ac[act]["h"])
+    if (ac[active_container_id]["floating"] == 1) {
+      target_container="floating"
+      print_us["trgcon"]=active_container_id
+      print_us["trgpar"]="floating"
+    } else {
 
-  awb=int(ac[act]["b"])
 
-  if (dir ~ /^(l|r|u|d|X)$/) {
-    
-    trgx=int((dir == "r" ? awx+aww+gapsz :
-              dir == "l" ? awx-gapsz     :
-              awx+(aww/2)+gapsz ))
+      target_container=find_window(arg_target)
 
-    # add awb (active window titlebar height) to gapsize
-    trgy=int((dir == "d" ? awy+awh+(gapsz+awb) :
-              dir == "u" ? awy-(gapsz+awb)     :
-              awy+(awh/2)+(gapsz+awb) ))
-
-    switch (dir) {
-
-      case "r":
-        if(trgx>(wsw+wsx)){
-          trgx=gapsz
-          wall="right"
-        }
-      break
-
-      case "l":
-        if(trgx<wsx){
-          trgx=wsw-gapsz
-          wall="left"
-        }
-      break
-
-      case "u":
-        if(trgy<wsy){
-          trgy=ac[awsid]["h"]-gapsz
-          wall="up"
-        }
-      break
-
-      case "d":
-        if(trgy>(wsh+wsy)){
-          trgy=gapsz
-          wall="down"
-        }
-      break
-    }
-
-    if (actfloat=="") {
-
-      for (conid in visiblecontainers) {
-
-        cwx=ac[conid]["x"] ; cww=ac[conid]["w"]
-        cwy=ac[conid]["y"] ; cwh=ac[conid]["h"]
-
-        cex=cwx+cww    ; cey=cwy+cwh
-
-        if (cwx <= trgx && trgx <= cex && cwy <= trgy && trgy <= cey) {
-          tpar=ac[conid]["parent"]
-          tcon=conid
-          break
-        }  
+      # if we cannot find a window in the given direction
+      # try again with increased gapsize.
+      if (target_container == "") {
+        arg_gap=arg_gap+30
+        target_container=find_window(arg_target)
       }
-    } 
-    else
-      tpar="floating"
+
+      print_us["trgcon"]=target_container
+      print_us["trgpar"]=ac[target_container]["i3fyracontainer"]
+    }
+
+    if (arg_type == "direction") {
+      print target_container, active_container_id, root_id, last_direction_id
+      exit
+    }
   }
 
-  else if (opret ~ /title|class|parent|instance|titleformat|winid/) {
-
-    for (conid in visiblecontainers) {
-      if (ac[conid][opret] ~ dir) {print conid ;exit}
+  # commandline example:
+  #   i3viswiz -i firefox (arg_target=firefox arg_type=instance)
+  else if (arg_target !~ /^(l|r|u|d|X)$/) {
+    for (conid in visible_containers) {
+      if (ac[conid][arg_type] ~ arg_target) {
+        print conid
+        exit
+      }
     }
     exit
   }
 
-  else
+  # commandline example:
+  #   i3viswiz -i firefox   (arg_target=X arg_type=instance)
+  #   i3viswiz -i firefox d (arg_target=d arg_type=instance)
+
+  print_us["gap"]=arg_gap
+
+  if (arg_debug == "ALL") {
+    for (k in print_us) {
+      v=gensub(/%k/,k,1,arg_debug_format)
+      debug_out=debug_out gensub(/%v/,print_us[k],1,v)
+    }
+
+    print debug_out
+    arg_debug="LIST"
+  }
+
+  else if (arg_debug != "LIST") {
+    split(arg_debug,debug_vars,",")
+    for (k in debug_vars) {
+      if (debug_vars[k] in print_us) {
+        v=gensub(/%k/,debug_vars[k],1,arg_debug_format)
+        var=gensub(/^"|"$/,"","g",print_us[debug_vars[k]])
+        debug_out=debug_out gensub(/%v/,var,1,v)
+      }
+    }
+
+    print debug_out
+  }
+
+  if (arg_debug !~ /LIST/)
     exit
-
-  head1="trgcon=%d trgx=%d trgy=%d wall=%s trgpar=%s "
-  head1=head1 "sx=%d sy=%d sw=%d sh=%d groupsize=%s "
-  head1=head1 "grouppos=%d firstingroup=%d lastingroup=%d "
-  head1=head1 "grouplayout=%s groupid=%d gap=%d"
-
-  printf(head1"\n",tcon,trgx,trgy,wall,tpar,
-                   wsx,wsy,wsw,wsh,
-                   groupsize, grouppos, firstingroup,
-                   lastingroup, grouplayout, groupid, gapsz)
+  
 
   split("x y w h",geo," ")
-  for (conid in visiblecontainers) {
-
-    printf("%s %d ", (conid==act ? "*" : "-" ), conid)
+  for (conid in visible_containers) {
+    
+    printf("%s %d ", (conid==active_container_id ? "*" : "-" ), conid)
+    cop=outputs[ac[conid]["output"]] # output of current container          
+    printf("ws: %d ", ws=ac[cop]["num"]) # workspace on current output
     for (s in geo) { printf("%2s %-6s", geo[s] ":", ac[conid][geo[s]]) }
 
-    print (opret ~ /title|class|parent|instance|titleformat|winid/ ?
-          "| " gensub(/"/,"","g",ac[conid][opret]) : "") 
+    print (arg_type ~ /(title_format|class|i3fyracontainer|instance|name|winid)$/ ?
+          "| " gensub(/"/,"","g",ac[conid][arg_type]) : "") 
   }
 
   # example output:
