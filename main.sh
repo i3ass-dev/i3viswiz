@@ -68,8 +68,7 @@ main(){
     [[ $arg_type = direction ]] && {
 
       # i3var set viswiz-last-direction "$active_id"
-      # we take manually update i3vars for performance reasons
-      
+      # manually update i3vars for performance reasons
       variable_name=i3viswiz-last-direction
       new_mark="${variable_name}=$active_id"
 
