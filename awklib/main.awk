@@ -94,10 +94,6 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
 
       # marks set by i3var all are at the root_id.
       # all that are related to i3viswiz has i3viswiz prefix
-      
-      # "marks":["i34MAC=157"
-      # "i34FBD=X"
-      # "hidden93845635698816="]
       else if (cid == root_id) {
         while (1) {
           match($0,/"(i3viswiz)?([^"=]+)=([^"]*)"([]])?$/,ma)
