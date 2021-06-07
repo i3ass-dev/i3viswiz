@@ -100,6 +100,8 @@ $(NF-1) ~ /"(type|output|id|window|name|num|x|floating|marks|layout|focused|inst
 
           if (ma[1] == "i3viswiz")
             last_direction_id=ma[3]
+          else if (ma[2] == "focus_wrap")
+            focus_wrap=ma[3]
           if (ma[4] ~ "]")
             break
 

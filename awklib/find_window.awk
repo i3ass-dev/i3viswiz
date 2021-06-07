@@ -38,8 +38,16 @@ function find_window(direction,
     # invert direction
     direction=(direction == "l" ? "r" : "l")
 
-    if ( (direction == "l" && trgx > rootx+rootw) ||
-         (direction == "r" && trgx < rootx) ) {
+    if (focus_wrap == "workspace") {
+
+      trgx=(direction == "r" ? wsx+wsw-arg_gap :
+                               wsx+arg_gap)
+
+      wall=wall "-workspace"
+    }
+
+    else if ( (direction == "l" && trgx > rootx+rootw) ||
+              (direction == "r" && trgx < rootx) ) {
 
       trgx=(direction == "r" ? rootx+rootw-arg_gap :
                                rootx+arg_gap)
@@ -61,8 +69,16 @@ function find_window(direction,
     # invert direction
     direction=(direction == "u" ? "d" : "u")
 
-    if ( (direction == "d" && trgy < rooty) ||
-         (direction == "u" && trgy > rooty+rooth) ) {
+    if (focus_wrap == "workspace") {
+
+      trgy=(direction == "d" ? wsy+wsh-arg_gap :
+                               wsy+arg_gap )
+
+      wall=wall "-workspace"
+    }
+
+    else if ( (direction == "d" && trgy < rooty) ||
+              (direction == "u" && trgy > rooty+rooth) ) {
 
       trgy=(direction == "d" ? rooty+rooth-arg_gap :
                                rooty+arg_gap )

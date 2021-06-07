@@ -38,6 +38,17 @@ main(){
   : "${__o[debug-format]:=%k=%v }"
   arg_gap=$((__o[gap] > 0 ? __o[gap] : 5))
 
+  # check if focus_wrap workspace is set
+  # by looking for a mark on root container (i3var)
+  # if no mark exist, check config, set the mark
+  re='^\{"id":([0-9]+)[^[]+\[([^]]*"focus_wrap=([^"]*)"[^]]*)?\]'
+  [[ ${__o[json]} =~ $re ]] || {
+    i3-msg -t get_config | grep -E 'focus_wrapping\s+workspace' > /dev/null \
+      && wrapping=workspace
+
+    i3var set focus_wrap "${wrapping:-normal}"
+  }
+
   result=$(
     # <<<    - content of string __o[json] will be input  to command awk
     # -f <() - output of awklib will be interpreted as file containg AWK script
