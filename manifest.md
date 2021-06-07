@@ -1,8 +1,8 @@
 ---
 description: >
   Professional window focus for i3wm
-updated:       2021-05-28
-version:       0.5
+updated:       2021-06-07
+version:       0.51
 author:        budRich
 repo:          https://github.com/budlabs/i3ass
 created:       2018-01-18
