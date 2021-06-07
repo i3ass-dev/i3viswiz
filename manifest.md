@@ -70,3 +70,21 @@ the following command:
 `$ i3viswiz --instance termsmall`  
 will output the container_id (`94475856575600`).  
 If now window is matching output will be blank.  
+
+**focus wrapping**  
+
+if the setting "focus_wrapping" is set
+to "workspace" in the i3config. i3viswiz will
+wrap the focus only inside the currenttly
+focused workspace instead of the whole work
+area (other monitors).
+
+The setting has to be present in the active config
+before the first i3viswiz invokation.
+
+To force this behavior otherwise, issue the following
+command:  
+`i3var set focus_wrap workspace`
+
+Or to disable it:  
+`i3var set focus_wrap normal`
